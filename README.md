@@ -2,6 +2,37 @@
 
 一个基于 Electron 的现代化工具集应用，支持强大的插件系统。
 
+## 📸 预览
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/main.png" alt="主界面">
+      <p align="center"><em>主界面</em></p>
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/plugins.png" alt="插件管理">
+      <p align="center"><em>插件管理</em></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/marketplace.png" alt="插件市场">
+      <p align="center"><em>插件市场</em></p>
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/settings.png" alt="设置页面">
+      <p align="center"><em>设置页面</em></p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <img src="docs/screenshots/dark-mode.png" alt="深色模式">
+      <p align="center"><em>深色模式</em></p>
+    </td>
+  </tr>
+</table>
+
 ## 特性
 
 - 🔌 强大的插件系统 - 支持动态加载和管理插件

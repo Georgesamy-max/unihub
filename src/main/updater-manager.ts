@@ -60,10 +60,21 @@ export class UpdaterManager {
   private registerUpdateEvents(): void {
     // 检查更新出错
     autoUpdater.on('error', (error) => {
+      const errorMessage = error.message || String(error)
+      
+      // 如果是 404/406 错误（没有 Release），静默处理
+      if (errorMessage.includes('404') || errorMessage.includes('406') || 
+          errorMessage.includes('Unable to find latest version')) {
+        logger.info('暂无可用的更新版本（可能还未发布 Release）')
+        this.isChecking = false
+        this.isDownloading = false
+        return
+      }
+      
       logger.error({ err: error }, '更新检查失败')
       this.isChecking = false
       this.isDownloading = false
-      this.sendToRenderer('update-error', { message: error.message })
+      this.sendToRenderer('update-error', { message: errorMessage })
     })
 
     // 检查更新中
