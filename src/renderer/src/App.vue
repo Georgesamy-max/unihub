@@ -473,8 +473,8 @@ const addHomeTab = (): void => {
     <aside
       ref="sidebarRef"
       :class="[
-        'bg-gray-100 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 flex-shrink-0',
-        sidebarCollapsed ? 'w-12' : 'w-52'
+        'bg-gray-100 dark:bg-gray-800 flex flex-col transition-all duration-300 flex-shrink-0',
+        sidebarCollapsed ? 'w-12' : 'w-52 border-r border-gray-200 dark:border-gray-700'
       ]"
     >
       <!-- 顶部拖动区域 -->
