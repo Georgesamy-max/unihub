@@ -1,0 +1,106 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-01-04T00:00:00Z",
+  "plugins": [
+    {
+      "id": "com.unihub.javascript-formatter",
+      "name": "JavaScript 格式化",
+      "version": "1.0.0",
+      "description": "JavaScript 代码格式化与压缩工具",
+      "author": {
+        "name": "UniHub Team",
+        "email": "team@unihub.dev",
+        "url": "https://github.com/unihub"
+      },
+      "icon": "https://api.iconify.design/vscode-icons/file-type-js-official.svg",
+      "category": "formatter",
+      "keywords": ["javascript", "js", "format", "formatter", "prettier", "格式化"],
+      "permissions": ["clipboard"],
+      "install": {
+        "zip": "https://unihub-1307847329.cos.ap-shanghai.myqcloud.com/official-plugins/javascript-formatter/plugin.zip"
+      },
+      "homepage": "https://github.com/t8y2",
+      "repository": "https://github.com/t8y2/unihub",
+      "screenshots": [],
+      "downloads": 0,
+      "rating": 5.0,
+      "createdAt": "2025-01-04T00:00:00Z",
+      "updatedAt": "2025-01-04T00:00:00Z"
+    },
+    {
+      "id": "com.unihub.jwt-tool",
+      "name": "JWT 工具",
+      "version": "1.0.0",
+      "description": "JWT 编码解码与验证工具 - 支持 HS256/HS384/HS512 算法",
+      "author": {
+        "name": "UniHub Team",
+        "email": "team@unihub.dev",
+        "url": "https://github.com/unihub"
+      },
+      "icon": "https://api.iconify.design/twemoji/locked-with-key.svg",
+      "category": "tool",
+      "keywords": ["jwt", "token", "auth", "encode", "decode", "verify", "认证"],
+      "permissions": ["clipboard"],
+      "install": {
+        "zip": "https://unihub-1307847329.cos.ap-shanghai.myqcloud.com/official-plugins/jwt-tool/plugin.zip"
+      },
+      "homepage": "https://github.com/t8y2",
+      "repository": "https://github.com/t8y2/unihub",
+      "screenshots": [],
+      "downloads": 0,
+      "rating": 5.0,
+      "createdAt": "2025-01-03T00:00:00Z",
+      "updatedAt": "2025-01-03T00:00:00Z"
+    },
+    {
+      "id": "com.unihub.h5-formatter",
+      "name": "H5 格式化工具",
+      "version": "1.0.0",
+      "description": "H5 页面格式化与压缩工具 - 支持 HTML/CSS/JavaScript 的美化和压缩",
+      "author": {
+        "name": "UniHub Team",
+        "email": "team@unihub.dev",
+        "url": "https://github.com/unihub"
+      },
+      "icon": "https://api.iconify.design/vscode-icons/file-type-html.svg",
+      "category": "formatter",
+      "keywords": ["h5", "html", "formatter", "beautify", "minify", "格式化", "压缩"],
+      "permissions": ["clipboard"],
+      "install": {
+        "zip": "https://unihub-1307847329.cos.ap-shanghai.myqcloud.com/official-plugins/h5-formatter-plugin/plugin.zip"
+      },
+      "homepage": "https://github.com/t8y2",
+      "repository": "https://github.com/t8y2/unihub",
+      "screenshots": [],
+      "downloads": 156,
+      "rating": 4.9,
+      "createdAt": "2024-12-31T00:00:00Z",
+      "updatedAt": "2024-12-31T00:00:00Z"
+    },
+    {
+      "id": "com.unihub.modern-vue",
+      "name": "Modern Vue Plugin",
+      "version": "1.0.0",
+      "description": "使用 Vite + Vue 3 + TypeScript 构建的现代化插件，支持 Base64 编码、文本加密和数据压缩",
+      "author": {
+        "name": "UniHub Team",
+        "email": "team@unihub.dev",
+        "url": "https://github.com/unihub"
+      },
+      "icon": "https://api.iconify.design/logos/vue.svg",
+      "category": "tool",
+      "keywords": ["vue", "typescript", "encode", "encrypt", "compress", "base64"],
+      "permissions": ["fs", "clipboard", "http", "spawn"],
+      "install": {
+        "zip": "https://unihub-1307847329.cos.ap-shanghai.myqcloud.com/official-plugins/modern-vue-plugin/plugin.zip"
+      },
+      "homepage": "https://github.com/t8y2",
+      "repository": "https://github.com/t8y2/unihub",
+      "screenshots": [],
+      "downloads": 0,
+      "rating": 5.0,
+      "createdAt": "2024-12-31T00:00:00Z",
+      "updatedAt": "2024-12-31T00:00:00Z"
+    }
+  ]
+}

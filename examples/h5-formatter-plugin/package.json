@@ -1,0 +1,48 @@
+{
+  "name": "h5-formatter-plugin",
+  "version": "1.0.0",
+  "description": "H5 页面格式化与压缩工具 - 支持 HTML/CSS/JavaScript 的美化和压缩",
+  "author": {
+    "name": "UniHub Team",
+    "email": "team@unihub.dev",
+    "url": "https://github.com/unihub"
+  },
+  "keywords": [
+    "h5",
+    "html",
+    "formatter",
+    "beautify",
+    "minify",
+    "格式化",
+    "压缩"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "package": "node scripts/package.js"
+  },
+  "unihub": {
+    "id": "com.unihub.h5-formatter",
+    "name": "H5 格式化工具",
+    "icon": "https://api.iconify.design/vscode-icons/file-type-html.svg",
+    "category": "formatter",
+    "permissions": [
+      "clipboard"
+    ],
+    "entry": "dist/index.html"
+  },
+  "dependencies": {
+    "highlight.js": "^11.10.0",
+    "prettier": "^3.4.2",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "archiver": "^7.0.1",
+    "autoprefixer": "^10.4.23",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.19",
+    "vite": "^6.0.3"
+  }
+}

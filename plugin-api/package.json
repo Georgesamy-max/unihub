@@ -1,0 +1,17 @@
+{
+  "name": "unihub-plugin-api",
+  "version": "1.0.0",
+  "description": "UniHub Plugin API - 插件列表和统计数据服务",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@vercel/node": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

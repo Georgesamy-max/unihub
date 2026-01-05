@@ -1,0 +1,52 @@
+{
+  "name": "simple-calculator",
+  "version": "1.0.0",
+  "description": "一个纯 HTML/CSS/JS 实现的简单计算器插件",
+  "author": "UniHub Team",
+  "license": "MIT",
+  "keywords": [
+    "calculator",
+    "math",
+    "tool",
+    "unihub-plugin"
+  ],
+  "homepage": "https://github.com/unihub/simple-calculator",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/unihub/simple-calculator"
+  },
+  "files": [
+    "dist",
+    "package.json",
+    "README.md"
+  ],
+  "unihub": {
+    "id": "com.unihub.simple-calculator",
+    "name": "简单计算器",
+    "version": "1.0.0",
+    "description": "一个纯 HTML/CSS/JS 实现的简单计算器插件",
+    "author": {
+      "name": "UniHub Team",
+      "email": "team@unihub.dev",
+      "url": "https://github.com/unihub"
+    },
+    "icon": "🧮",
+    "category": "tool",
+    "keywords": [
+      "calculator",
+      "math",
+      "tool"
+    ],
+    "entry": "dist/index.html",
+    "permissions": [
+      "clipboard"
+    ],
+    "screenshots": [],
+    "homepage": "https://github.com/unihub/simple-calculator",
+    "repository": "https://github.com/unihub/simple-calculator",
+    "install": {
+      "npm": "@unihub/simple-calculator",
+      "github": "unihub/simple-calculator"
+    }
+  }
+}
