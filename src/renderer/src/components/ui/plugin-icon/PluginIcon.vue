@@ -39,7 +39,11 @@ const iconType = computed(() => {
     return 'svg'
   }
 
-  if (props.icon.startsWith('http') || props.icon.startsWith('data:image')) {
+  if (
+    props.icon.startsWith('http') ||
+    props.icon.startsWith('data:image') ||
+    props.icon.startsWith('plugin://')
+  ) {
     return imageLoadError.value ? 'default' : 'image'
   }
 

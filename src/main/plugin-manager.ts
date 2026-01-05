@@ -356,6 +356,30 @@ export class PluginManager {
   }
 
   /**
+   * 解析图标路径
+   * 如果是相对路径（如 favicon.ico 或 dist/icon.png），转换为 plugin:// 协议的 URL
+   */
+  private resolveIconPath(icon: string | undefined, pluginId: string): string | undefined {
+    if (!icon) return undefined
+
+    // 如果是 emoji、SVG path、或已经是完整 URL，直接返回
+    if (
+      icon.startsWith('http') ||
+      icon.startsWith('data:') ||
+      icon.startsWith('M') ||
+      icon.startsWith('m') ||
+      icon.length <= 4 // emoji 通常很短
+    ) {
+      return icon
+    }
+
+    // 相对路径，转换为 plugin:// URL
+    // 去掉开头的 ./ 或 /
+    const cleanPath = icon.replace(/^\.?\//, '')
+    return `plugin://${pluginId}/${cleanPath}`
+  }
+
+  /**
    * 将 package.json 字段自动继承到 unihub 配置中
    * 只有当 unihub 字段未提供时才会继承
    */
@@ -395,7 +419,7 @@ export class PluginManager {
       author: getAuthorInfo(unihub.author, pkg.author),
 
       // 可选字段的继承
-      icon: unihub.icon,
+      icon: this.resolveIconPath(unihub.icon, unihub.id),
       category: unihub.category || 'tool',
       keywords: unihub.keywords || pkg.keywords || [],
       permissions: unihub.permissions || [],
