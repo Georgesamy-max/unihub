@@ -42,6 +42,23 @@
 - 🔒 权限管理 - 细粒度的插件权限控制
 - 🔄 自动更新 - 支持应用自动更新，基于 GitHub Releases
 
+## 💬 交流群
+
+欢迎加入 UniHub 交流群，与其他开发者一起讨论和分享！
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="docs/screenshots/wechat-group-qrcode.png" width="200" alt="微信群">
+      <p><strong>微信交流群</strong></p>
+    </td>
+    <td align="center">
+      <img src="docs/screenshots/qq-group-qrcode.png" width="200" alt="QQ群">
+      <p><strong>QQ 交流群</strong></p>
+    </td>
+  </tr>
+</table>
+
 ## 快速开始
 
 ```bash
