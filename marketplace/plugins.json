@@ -3,6 +3,31 @@
   "lastUpdated": "2025-01-06T12:00:00Z",
   "plugins": [
     {
+      "id": "com.unihub.markdown-editor",
+      "name": "Markdown 编辑器",
+      "version": "1.0.0",
+      "description": "基于 Vditor 的 Markdown 编辑器 - 支持实时预览、语法高亮、数学公式、Mermaid 图表和导出功能",
+      "author": {
+        "name": "UniHub Team",
+        "email": "team@unihub.dev",
+        "url": "https://github.com/unihub"
+      },
+      "icon": "https://api.iconify.design/vscode-icons/file-type-markdown.svg",
+      "category": "tool",
+      "keywords": ["markdown", "editor", "preview", "latex", "mermaid", "编辑器", "预览", "文档"],
+      "permissions": ["clipboard", "storage"],
+      "install": {
+        "zip": "https://unihub-1307847329.cos.ap-shanghai.myqcloud.com/official-plugins/markdown-editor/plugin.zip"
+      },
+      "homepage": "https://github.com/t8y2",
+      "repository": "https://github.com/t8y2/unihub",
+      "screenshots": [],
+      "downloads": 0,
+      "rating": 5.0,
+      "createdAt": "2025-01-06T12:00:00Z",
+      "updatedAt": "2025-01-06T12:00:00Z"
+    },
+    {
       "id": "com.unihub.clipboard-history",
       "name": "剪贴板历史",
       "version": "1.0.0",
