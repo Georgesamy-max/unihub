@@ -1,30 +1,25 @@
-import { autoUpdater } from 'electron-updater'
-import { BrowserWindow, dialog } from 'electron'
+import { BrowserWindow, dialog, shell } from 'electron'
 import { createLogger } from '../shared/logger'
-import { is } from '@electron-toolkit/utils'
+import { app } from 'electron'
 
 const logger = createLogger('updater')
 
-export interface UpdateInfo {
+export interface VersionInfo {
   version: string
   releaseDate: string
   releaseNotes?: string
-}
-
-export interface UpdateProgress {
-  percent: number
-  bytesPerSecond: number
-  transferred: number
-  total: number
+  downloadUrl: string
+  isNewer: boolean
 }
 
 export class UpdaterManager {
   private mainWindow: BrowserWindow | null = null
   private isChecking = false
-  private isDownloading = false
+  private currentVersion: string
 
   constructor() {
-    this.setupAutoUpdater()
+    this.currentVersion = app.getVersion()
+    logger.info(`当前版本: ${this.currentVersion}`)
   }
 
   /**
@@ -35,197 +30,158 @@ export class UpdaterManager {
   }
 
   /**
-   * 配置 autoUpdater
-   */
-  private setupAutoUpdater(): void {
-    // 开发环境配置
-    if (is.dev) {
-      autoUpdater.updateConfigPath = 'dev-app-update.yml'
-      autoUpdater.forceDevUpdateConfig = true
-    }
-
-    // 自动下载更新（静默下载）
-    autoUpdater.autoDownload = false
-    autoUpdater.autoInstallOnAppQuit = true
-
-    // 监听更新事件
-    this.registerUpdateEvents()
-
-    logger.info('UpdaterManager 已初始化')
-  }
-
-  /**
-   * 注册更新事件监听器
-   */
-  private registerUpdateEvents(): void {
-    // 检查更新出错
-    autoUpdater.on('error', (error) => {
-      const errorMessage = error.message || String(error)
-
-      // 如果是 404/406 错误（没有 Release），静默处理
-      if (
-        errorMessage.includes('404') ||
-        errorMessage.includes('406') ||
-        errorMessage.includes('Unable to find latest version')
-      ) {
-        logger.info('暂无可用的更新版本（可能还未发布 Release）')
-        this.isChecking = false
-        this.isDownloading = false
-        return
-      }
-
-      logger.error({ err: error }, '更新检查失败')
-      this.isChecking = false
-      this.isDownloading = false
-      this.sendToRenderer('update-error', { message: errorMessage })
-    })
-
-    // 检查更新中
-    autoUpdater.on('checking-for-update', () => {
-      logger.info('正在检查更新...')
-      this.isChecking = true
-      this.sendToRenderer('checking-for-update')
-    })
-
-    // 发现新版本
-    autoUpdater.on('update-available', (info) => {
-      logger.info({ version: info.version }, '发现新版本')
-      this.isChecking = false
-
-      // 如果正在下载，不重复弹窗
-      if (this.isDownloading) {
-        logger.info('正在下载更新，跳过新版本提示')
-        return
-      }
-
-      this.sendToRenderer('update-available', {
-        version: info.version,
-        releaseDate: info.releaseDate,
-        releaseNotes: info.releaseNotes
-      })
-    })
-
-    // 当前已是最新版本
-    autoUpdater.on('update-not-available', (info) => {
-      logger.info({ version: info.version }, '当前已是最新版本')
-      this.isChecking = false
-      this.sendToRenderer('update-not-available', {
-        version: info.version
-      })
-    })
-
-    // 下载进度
-    autoUpdater.on('download-progress', (progress) => {
-      const percent = Math.round(progress.percent)
-      logger.info({ percent }, `下载进度: ${percent}%`)
-      this.sendToRenderer('download-progress', {
-        percent: progress.percent,
-        bytesPerSecond: progress.bytesPerSecond,
-        transferred: progress.transferred,
-        total: progress.total
-      })
-    })
-
-    // 下载完成
-    autoUpdater.on('update-downloaded', (info) => {
-      logger.info({ version: info.version }, '更新下载完成')
-      this.isDownloading = false
-      this.sendToRenderer('update-downloaded', {
-        version: info.version,
-        releaseDate: info.releaseDate,
-        releaseNotes: info.releaseNotes
-      })
-
-      // 显示安装提示对话框
-      this.showInstallDialog(info.version)
-    })
-  }
-
-  /**
-   * 检查更新
+   * 检查版本更新（通过 GitHub API）
    */
   async checkForUpdates(silent = false): Promise<void> {
-    // 如果正在检查或下载，直接返回
-    if (this.isChecking || this.isDownloading) {
-      logger.warn('更新检查或下载已在进行中，跳过本次检查')
+    if (this.isChecking) {
+      logger.warn('版本检查已在进行中，跳过本次检查')
       return
     }
 
+    this.isChecking = true
+
     try {
-      logger.info({ silent }, '开始检查更新')
-      await autoUpdater.checkForUpdates()
-    } catch (error) {
-      logger.error({ err: error }, '检查更新失败')
+      logger.info({ silent }, '开始检查版本更新')
+      this.sendToRenderer('checking-for-update')
+
+      // 请求 GitHub API 获取最新 Release
+      const response = await fetch('https://api.github.com/repos/t8y2/unihub/releases/latest')
+
+      if (!response.ok) {
+        throw new Error(`GitHub API 请求失败: ${response.status}`)
+      }
+
+      const releaseData = await response.json()
+      const latestVersion = releaseData.tag_name.replace(/^v/, '') // 移除 v 前缀
+      const isNewer = this.compareVersions(latestVersion, this.currentVersion) > 0
+
+      const versionInfo: VersionInfo = {
+        version: latestVersion,
+        releaseDate: releaseData.published_at,
+        releaseNotes: releaseData.body,
+        downloadUrl: releaseData.html_url, // GitHub Release 页面
+        isNewer
+      }
+
       this.isChecking = false
+
+      if (isNewer) {
+        logger.info({ latestVersion, currentVersion: this.currentVersion }, '发现新版本')
+        this.sendToRenderer('update-available', versionInfo)
+
+        if (!silent) {
+          this.showUpdateDialog(versionInfo)
+        }
+      } else {
+        logger.info('当前已是最新版本')
+        this.sendToRenderer('update-not-available', versionInfo)
+
+        if (!silent) {
+          this.showNoUpdateDialog()
+        }
+      }
+    } catch (error) {
+      this.isChecking = false
+      const errorMessage = error instanceof Error ? error.message : '检查更新失败'
+      logger.error({ err: error }, '版本检查失败')
+
       if (!silent) {
-        this.sendToRenderer('update-error', {
-          message: error instanceof Error ? error.message : '检查更新失败'
-        })
+        this.sendToRenderer('update-error', { message: errorMessage })
+        this.showErrorDialog(errorMessage)
       }
     }
   }
 
   /**
-   * 下载更新
+   * 比较版本号
+   * @param version1 版本1
+   * @param version2 版本2
+   * @returns 1: version1 > version2, 0: 相等, -1: version1 < version2
    */
-  async downloadUpdate(): Promise<void> {
-    if (this.isDownloading) {
-      logger.warn('更新下载已在进行中')
-      return
+  private compareVersions(version1: string, version2: string): number {
+    const v1Parts = version1.split('.').map(Number)
+    const v2Parts = version2.split('.').map(Number)
+    const maxLength = Math.max(v1Parts.length, v2Parts.length)
+
+    for (let i = 0; i < maxLength; i++) {
+      const v1Part = v1Parts[i] || 0
+      const v2Part = v2Parts[i] || 0
+
+      if (v1Part > v2Part) return 1
+      if (v1Part < v2Part) return -1
     }
 
-    try {
-      logger.info('开始下载更新')
-      this.isDownloading = true
-      await autoUpdater.downloadUpdate()
-    } catch (error) {
-      logger.error({ err: error }, '下载更新失败')
-      this.isDownloading = false
-      this.sendToRenderer('update-error', {
-        message: error instanceof Error ? error.message : '下载更新失败'
-      })
-    }
+    return 0
   }
 
   /**
-   * 获取当前更新状态
+   * 显示更新对话框
    */
-  getUpdateStatus(): { isChecking: boolean; isDownloading: boolean } {
-    return {
-      isChecking: this.isChecking,
-      isDownloading: this.isDownloading
-    }
-  }
-
-  /**
-   * 安装更新并重启
-   */
-  quitAndInstall(): void {
-    logger.info('准备安装更新并重启应用')
-    autoUpdater.quitAndInstall(false, true)
-  }
-
-  /**
-   * 显示安装对话框
-   */
-  private showInstallDialog(version: string): void {
+  private showUpdateDialog(versionInfo: VersionInfo): void {
     if (!this.mainWindow) return
+
+    const releaseNotes = versionInfo.releaseNotes
+      ? `\n\n更新内容:\n${versionInfo.releaseNotes.substring(0, 200)}${versionInfo.releaseNotes.length > 200 ? '...' : ''}`
+      : ''
 
     dialog
       .showMessageBox(this.mainWindow, {
         type: 'info',
-        title: '更新已就绪',
-        message: `新版本 ${version} 已下载完成`,
-        detail: '是否立即重启应用以安装更新？',
-        buttons: ['立即重启', '稍后'],
+        title: '发现新版本',
+        message: `新版本 ${versionInfo.version} 可用`,
+        detail: `当前版本: ${this.currentVersion}\n最新版本: ${versionInfo.version}${releaseNotes}\n\n点击"下载"将打开浏览器前往下载页面。`,
+        buttons: ['下载', '稍后', '不再提醒'],
         defaultId: 0,
         cancelId: 1
       })
       .then((result) => {
         if (result.response === 0) {
-          this.quitAndInstall()
+          // 打开下载页面
+          shell.openExternal(versionInfo.downloadUrl)
+        } else if (result.response === 2) {
+          // 用户选择不再提醒，可以在这里保存设置
+          logger.info('用户选择不再提醒更新')
         }
       })
+  }
+
+  /**
+   * 显示无更新对话框
+   */
+  private showNoUpdateDialog(): void {
+    if (!this.mainWindow) return
+
+    dialog.showMessageBox(this.mainWindow, {
+      type: 'info',
+      title: '检查更新',
+      message: '当前已是最新版本',
+      detail: `当前版本: ${this.currentVersion}`,
+      buttons: ['确定']
+    })
+  }
+
+  /**
+   * 显示错误对话框
+   */
+  private showErrorDialog(message: string): void {
+    if (!this.mainWindow) return
+
+    dialog.showMessageBox(this.mainWindow, {
+      type: 'error',
+      title: '检查更新失败',
+      message: '无法检查更新',
+      detail: message,
+      buttons: ['确定']
+    })
+  }
+
+  /**
+   * 获取当前状态
+   */
+  getUpdateStatus(): { isChecking: boolean } {
+    return {
+      isChecking: this.isChecking
+    }
   }
 
   /**

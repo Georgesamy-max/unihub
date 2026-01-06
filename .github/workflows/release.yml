@@ -57,7 +57,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pnpm build
+          pnpm build:prod
           pnpm exec electron-builder --mac --publish always
 
       - name: Build and release (Windows)
@@ -65,7 +65,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pnpm build
+          pnpm build:prod
           pnpm exec electron-builder --win --publish always
 
       - name: Build and release (Linux)
@@ -73,5 +73,5 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pnpm build
+          pnpm build:prod
           pnpm exec electron-builder --linux --publish always

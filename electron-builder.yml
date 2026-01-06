@@ -2,13 +2,36 @@ appId: com.unihub.app
 productName: Unihub
 directories:
   buildResources: build
+# 优化 Electron 框架大小 - 只保留需要的语言包
+electronLanguages:
+  - en
+  - zh-CN
 files:
+  - out/**/*
+  - node_modules/@electron-toolkit/**/*
+  - node_modules/adm-zip/**/*
+  - node_modules/better-sqlite3/**/*
+  - node_modules/file-icon/**/*
+  - node_modules/get-installed-apps/**/*
+  - node_modules/pino/**/*
+  - node_modules/pino-pretty/**/*
+  - node_modules/pinyin-pro/**/*
+  - node_modules/tailwindcss-animate/**/*
+  - node_modules/vue-sonner/**/*
+  - marketplace/**/*
+  - resources/**/*
+  - package.json
   - '!**/.vscode/*'
   - '!src/*'
   - '!electron.vite.config.{js,ts,mjs,cjs}'
   - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!**/*.map'
+  - '!examples/**'
+  - '!docs/**'
+  - '!tools/**'
+  - '!scripts/**'
 asarUnpack:
   - resources/**
 win:
@@ -22,20 +45,13 @@ nsis:
 mac:
   icon: build/icon.icns
   category: public.app-category.developer-tools
-  artifactName: ${name}-${version}-${arch}.${ext}
   target:
     - target: dmg
       arch:
         - x64
         - arm64
-    - target: zip
-      arch:
-        - x64
-        - arm64
-  entitlementsInherit: build/entitlements.mac.plist
   hardenedRuntime: false
   gatekeeperAssess: false
-  identity: null
   extendInfo:
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.

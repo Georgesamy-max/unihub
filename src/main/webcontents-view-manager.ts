@@ -56,6 +56,8 @@ export class WebContentsViewManager {
         contextIsolation: true,
         nodeIntegration: false,
         webSecurity: true,
+        // 生产环境禁用开发者工具
+        devTools: process.env.NODE_ENV === 'development',
         // 性能优化选项
         backgroundThrottling: false, // 禁用后台节流，保持插件响应
         offscreen: false, // 禁用离屏渲染

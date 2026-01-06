@@ -12,6 +12,7 @@ export default defineConfig({
         input: {
           index: resolve(__dirname, 'src/main/index.ts')
         }
+        // 移除 external 配置，让依赖正常打包到 bundle 中
       },
       // 性能优化
       minify: 'esbuild',
@@ -52,6 +53,11 @@ export default defineConfig({
         input: {
           index: resolve(__dirname, 'src/renderer/index.html')
         },
+        // Tree shaking 优化
+        treeshake: {
+          preset: 'recommended',
+          moduleSideEffects: false
+        },
         output: {
           // 代码分割优化 - 更细粒度的分块
           manualChunks(id): string | undefined {
@@ -89,6 +95,18 @@ export default defineConfig({
             ) {
               return 'parsers'
             }
+            // VueUse 工具库
+            if (id.includes('node_modules/@vueuse/')) {
+              return 'vueuse'
+            }
+            // 样式相关
+            if (id.includes('node_modules/tailwind') || id.includes('node_modules/clsx')) {
+              return 'styles'
+            }
+            // 其他大型库单独分包
+            if (id.includes('node_modules/prettier')) {
+              return 'prettier'
+            }
             // 其他 node_modules
             if (id.includes('node_modules')) {
               return 'vendor'
@@ -97,7 +115,7 @@ export default defineConfig({
             return undefined
           },
           // 优化代码分割
-          experimentalMinChunkSize: 20000 // 最小 chunk 大小 20KB
+          experimentalMinChunkSize: 10000 // 减小最小 chunk 大小到 10KB
         }
       },
       // 性能优化
@@ -106,7 +124,10 @@ export default defineConfig({
       cssCodeSplit: true,
       chunkSizeWarningLimit: 1500,
       reportCompressedSize: false, // 禁用压缩大小报告
-      sourcemap: false
+      sourcemap: false,
+      // 进一步优化
+      assetsInlineLimit: 4096, // 小于 4KB 的资源内联
+      cssMinify: 'esbuild'
     },
     // 开发服务器优化
     server: {
@@ -124,6 +145,15 @@ export default defineConfig({
       exclude: ['electron'],
       // 强制预构建
       force: false
+    },
+    // 进一步优化构建
+    esbuild: {
+      // 移除 console 和 debugger（生产环境）
+      drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+      // 压缩标识符
+      minifyIdentifiers: true,
+      minifySyntax: true,
+      minifyWhitespace: true
     }
   }
 })

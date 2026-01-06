@@ -61,7 +61,9 @@ function createWindow(): void {
       sandbox: false,
       contextIsolation: true,
       nodeIntegration: false,
-      webSecurity: false // 允许加载自定义协议
+      webSecurity: false, // 允许加载自定义协议
+      // 生产环境禁用开发者工具
+      devTools: process.env.NODE_ENV === 'development'
     }
   })
 
@@ -530,16 +532,6 @@ function setupIpcHandlers(): void {
   // 更新相关 IPC
   ipcMain.handle('updater:check', async () => {
     await updaterManager.checkForUpdates(false)
-    return { success: true }
-  })
-
-  ipcMain.handle('updater:download', async () => {
-    await updaterManager.downloadUpdate()
-    return { success: true }
-  })
-
-  ipcMain.handle('updater:install', () => {
-    updaterManager.quitAndInstall()
     return { success: true }
   })
 

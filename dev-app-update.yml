@@ -1,4 +1,0 @@
-provider: github
-owner: t8y2
-repo: unihub
-updaterCacheDirName: unihub-electron-updater
