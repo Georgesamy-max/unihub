@@ -543,6 +543,10 @@ function setupIpcHandlers(): void {
     return { success: true }
   })
 
+  ipcMain.handle('updater:status', () => {
+    return updaterManager.getUpdateStatus()
+  })
+
   // 延迟初始化 API（不阻塞启动）
   setImmediate(() => {
     logger.info(

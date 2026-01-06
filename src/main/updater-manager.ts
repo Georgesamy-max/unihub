@@ -61,16 +61,19 @@ export class UpdaterManager {
     // 检查更新出错
     autoUpdater.on('error', (error) => {
       const errorMessage = error.message || String(error)
-      
+
       // 如果是 404/406 错误（没有 Release），静默处理
-      if (errorMessage.includes('404') || errorMessage.includes('406') || 
-          errorMessage.includes('Unable to find latest version')) {
+      if (
+        errorMessage.includes('404') ||
+        errorMessage.includes('406') ||
+        errorMessage.includes('Unable to find latest version')
+      ) {
         logger.info('暂无可用的更新版本（可能还未发布 Release）')
         this.isChecking = false
         this.isDownloading = false
         return
       }
-      
+
       logger.error({ err: error }, '更新检查失败')
       this.isChecking = false
       this.isDownloading = false
@@ -88,6 +91,13 @@ export class UpdaterManager {
     autoUpdater.on('update-available', (info) => {
       logger.info({ version: info.version }, '发现新版本')
       this.isChecking = false
+
+      // 如果正在下载，不重复弹窗
+      if (this.isDownloading) {
+        logger.info('正在下载更新，跳过新版本提示')
+        return
+      }
+
       this.sendToRenderer('update-available', {
         version: info.version,
         releaseDate: info.releaseDate,
@@ -135,8 +145,9 @@ export class UpdaterManager {
    * 检查更新
    */
   async checkForUpdates(silent = false): Promise<void> {
-    if (this.isChecking) {
-      logger.warn('更新检查已在进行中')
+    // 如果正在检查或下载，直接返回
+    if (this.isChecking || this.isDownloading) {
+      logger.warn('更新检查或下载已在进行中，跳过本次检查')
       return
     }
 
@@ -145,6 +156,7 @@ export class UpdaterManager {
       await autoUpdater.checkForUpdates()
     } catch (error) {
       logger.error({ err: error }, '检查更新失败')
+      this.isChecking = false
       if (!silent) {
         this.sendToRenderer('update-error', {
           message: error instanceof Error ? error.message : '检查更新失败'
@@ -172,6 +184,16 @@ export class UpdaterManager {
       this.sendToRenderer('update-error', {
         message: error instanceof Error ? error.message : '下载更新失败'
       })
+    }
+  }
+
+  /**
+   * 获取当前更新状态
+   */
+  getUpdateStatus(): { isChecking: boolean; isDownloading: boolean } {
+    return {
+      isChecking: this.isChecking,
+      isDownloading: this.isDownloading
     }
   }
 
