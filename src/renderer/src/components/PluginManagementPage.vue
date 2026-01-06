@@ -82,7 +82,7 @@ const pluginsByCategory = computed(() => {
   return categories
 })
 
-const enabledCount = computed(() => pluginRegistry.getEnabled().length)
+const enabledCount = computed(() => builtInPlugins.value.filter((p) => p.enabled).length)
 
 // 切换插件状态
 const togglePlugin = (id: string): void => {
@@ -248,7 +248,9 @@ const uninstallPlugin = async (): Promise<void> => {
 <template>
   <div class="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
     <!-- 标签页切换 -->
-    <div class="flex items-center justify-between px-6 pt-4 pb-2">
+    <div
+      class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700"
+    >
       <div class="inline-flex items-center p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
         <button
           :class="[
@@ -292,12 +294,12 @@ const uninstallPlugin = async (): Promise<void> => {
     </div>
 
     <!-- 内容区 -->
-    <div class="flex-1 min-h-0 overflow-y-auto px-6 pb-6">
+    <div class="flex-1 min-h-0 overflow-y-auto">
       <!-- 已安装插件标签页 -->
-      <div v-show="activeTab === 'installed'" class="space-y-6 pt-4">
+      <div v-show="activeTab === 'installed'" class="space-y-4 p-4">
         <!-- 第三方插件 -->
         <div v-if="thirdPartyPlugins.length > 0">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
             第三方插件
             <span class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
               {{ thirdPartyPlugins.length }} 个已安装
@@ -308,22 +310,22 @@ const uninstallPlugin = async (): Promise<void> => {
             <div
               v-for="plugin in thirdPartyPlugins"
               :key="plugin.metadata.id"
-              class="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+              class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
             >
               <!-- 图标 -->
-              <PluginIcon :icon="plugin.metadata.icon" size="md" />
+              <PluginIcon :icon="plugin.metadata.icon" size="sm" class="flex-shrink-0" />
 
               <!-- 信息 -->
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
-                  <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                     {{ plugin.metadata.name }}
                   </h4>
-                  <Badge variant="secondary" class="text-xs">
+                  <Badge variant="secondary" class="text-xs px-1.5 py-0.5">
                     v{{ plugin.metadata.version }}
                   </Badge>
                 </div>
-                <p class="text-xs text-gray-600 dark:text-gray-400">
+                <p class="text-xs text-gray-600 dark:text-gray-400 line-clamp-1">
                   {{ plugin.metadata.description }}
                 </p>
               </div>
@@ -332,7 +334,7 @@ const uninstallPlugin = async (): Promise<void> => {
               <Button
                 size="sm"
                 variant="outline"
-                class="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                class="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 text-xs px-2 py-1 h-auto flex-shrink-0"
                 @click="confirmUninstall(plugin.metadata.id, plugin.metadata.name)"
               >
                 卸载
@@ -344,22 +346,22 @@ const uninstallPlugin = async (): Promise<void> => {
         <!-- 内置插件 -->
         <div
           :class="{
-            'pt-6 border-t border-gray-200 dark:border-gray-700': thirdPartyPlugins.length > 0
+            'pt-4 border-t border-gray-200 dark:border-gray-700': thirdPartyPlugins.length > 0
           }"
         >
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
             内置插件
             <span class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
               已启用 {{ enabledCount }} / {{ builtInPlugins.length }} 个
             </span>
           </h2>
 
-          <div class="space-y-6">
+          <div class="space-y-3">
             <div v-for="[category, plugins] in pluginsByCategory" :key="category">
               <h3
-                class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2"
+                class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2"
               >
-                <div class="w-1 h-4 bg-blue-500 rounded-full"></div>
+                <div class="w-1 h-3 bg-blue-500 rounded-full"></div>
                 {{ CATEGORY_NAMES[category] || category }}
               </h3>
 
@@ -367,14 +369,14 @@ const uninstallPlugin = async (): Promise<void> => {
                 <div
                   v-for="plugin in plugins"
                   :key="plugin.metadata.id"
-                  class="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+                  class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
                 >
                   <!-- 图标 -->
                   <div
-                    class="w-10 h-10 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center flex-shrink-0"
+                    class="w-8 h-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center flex-shrink-0"
                   >
                     <svg
-                      class="w-5 h-5 text-blue-600 dark:text-blue-400"
+                      class="w-4 h-4 text-blue-600 dark:text-blue-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -390,15 +392,15 @@ const uninstallPlugin = async (): Promise<void> => {
 
                   <!-- 信息 -->
                   <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2">
-                      <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <div class="flex items-center gap-2 mb-1">
+                      <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                         {{ plugin.metadata.name }}
                       </h4>
-                      <Badge variant="secondary" class="text-xs">
+                      <Badge variant="secondary" class="text-xs px-1.5 py-0.5">
                         v{{ plugin.metadata.version }}
                       </Badge>
                     </div>
-                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                    <p class="text-xs text-gray-600 dark:text-gray-400 line-clamp-1">
                       {{ plugin.metadata.description }}
                     </p>
                   </div>
@@ -406,6 +408,7 @@ const uninstallPlugin = async (): Promise<void> => {
                   <!-- 开关 -->
                   <Switch
                     :checked="plugin.enabled"
+                    class="flex-shrink-0"
                     @update:checked="togglePlugin(plugin.metadata.id)"
                   />
                 </div>
@@ -421,17 +424,17 @@ const uninstallPlugin = async (): Promise<void> => {
       </div>
 
       <!-- 手动安装标签页 -->
-      <div v-show="activeTab === 'install'" class="space-y-4 pt-4">
+      <div v-show="activeTab === 'install'" class="space-y-3 p-4">
         <!-- 从 URL 安装 -->
         <div
-          class="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700"
+          class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
         >
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">手动安装插件</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">手动安装插件</h3>
 
           <!-- 拖拽区域 -->
           <div
             :class="[
-              'border-2 border-dashed rounded-lg p-8 mb-4 text-center transition-colors cursor-pointer',
+              'border-2 border-dashed rounded-lg p-6 mb-3 text-center transition-colors cursor-pointer',
               isDragging
                 ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                 : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/50'
@@ -443,7 +446,7 @@ const uninstallPlugin = async (): Promise<void> => {
             @click="triggerFileSelect"
           >
             <svg
-              class="w-12 h-12 mx-auto mb-4 text-gray-400"
+              class="w-10 h-10 mx-auto mb-3 text-gray-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -455,7 +458,7 @@ const uninstallPlugin = async (): Promise<void> => {
                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
               />
             </svg>
-            <p class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+            <p class="text-base font-medium text-gray-900 dark:text-gray-100 mb-1">
               拖拽 ZIP 文件到这里
             </p>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">或者点击选择文件</p>
@@ -471,7 +474,7 @@ const uninstallPlugin = async (): Promise<void> => {
             @change="handleFileSelect"
           />
 
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
             支持三种安装方式：拖拽文件、点击选择文件，或输入 URL
           </p>
 

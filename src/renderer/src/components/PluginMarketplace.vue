@@ -311,7 +311,7 @@ onUnmounted(() => {
 <template>
   <div class="h-full flex flex-col bg-white dark:bg-gray-900">
     <!-- 搜索和筛选 -->
-    <div class="flex-shrink-0 border-b border-gray-200 dark:border-gray-700 p-6">
+    <div class="flex-shrink-0 border-b border-gray-200 dark:border-gray-700 p-4">
       <div class="flex gap-4 items-center">
         <div class="flex-1">
           <Input v-model="searchQuery" placeholder="搜索插件..." class="w-full" />
@@ -375,7 +375,7 @@ onUnmounted(() => {
     </div>
 
     <!-- 内容区 -->
-    <div class="flex-1 overflow-y-auto p-6">
+    <div class="flex-1 overflow-y-auto p-4">
       <!-- 加载中 -->
       <div v-if="loading" class="flex items-center justify-center h-64">
         <div class="text-center">
