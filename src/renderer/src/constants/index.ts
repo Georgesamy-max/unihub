@@ -114,7 +114,11 @@ export const APP_INFO = {
 // 优先从 API 获取插件列表（实时更新），失败时回退到 CDN
 export const MARKETPLACE_URL = import.meta.env.VITE_PLUGIN_API_URL
   ? `${import.meta.env.VITE_PLUGIN_API_URL}/plugins`
-  : 'https://cdn.jsdelivr.net/gh/t8y2/unihub@main/marketplace/plugins.json'
+  : 'https://stats-api-nu.vercel.app/api/plugins'
+
+// 调试输出（开发时可见）
+// console.log('🔧 [Config] VITE_PLUGIN_API_URL:', import.meta.env.VITE_PLUGIN_API_URL)
+// console.log('🔧 [Config] MARKETPLACE_URL:', MARKETPLACE_URL)
 
 // CDN 备用地址（用于 API 不可用时的降级）
 export const MARKETPLACE_CDN_URL =
