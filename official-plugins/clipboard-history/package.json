@@ -1,19 +1,19 @@
 {
-  "name": "javascript-formatter-plugin",
+  "name": "clipboard-history-plugin",
   "version": "1.0.0",
-  "description": "JavaScript 代码格式化与压缩工具",
+  "description": "剪贴板历史管理工具 - 记录、搜索和管理剪贴板历史",
   "author": {
     "name": "UniHub Team",
     "email": "team@unihub.dev",
     "url": "https://github.com/unihub"
   },
   "keywords": [
-    "javascript",
-    "js",
-    "format",
-    "formatter",
-    "prettier",
-    "格式化"
+    "clipboard",
+    "history",
+    "paste",
+    "copy",
+    "剪贴板",
+    "历史记录"
   ],
   "type": "module",
   "scripts": {
@@ -22,30 +22,25 @@
     "package": "node scripts/package.js"
   },
   "unihub": {
-    "id": "com.unihub.javascript-formatter",
-    "name": "JavaScript 格式化",
-    "icon": "https://api.iconify.design/vscode-icons/file-type-js-official.svg",
-    "category": "formatter",
+    "id": "com.unihub.clipboard-history",
+    "name": "剪贴板历史",
+    "icon": "https://api.iconify.design/fluent-emoji/clipboard.svg",
+    "category": "tool",
     "permissions": [
-      "clipboard"
+      "clipboard",
+      "storage"
     ],
     "entry": "dist/index.html"
   },
   "dependencies": {
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "highlight.js": "^11.10.0",
+    "@vueuse/core": "^14.1.0",
     "lucide-vue-next": "^0.562.0",
-    "prettier": "^3.4.2",
-    "reka-ui": "^2.7.0",
-    "tailwind-merge": "^3.4.0",
-    "vue": "^3.5.13",
-    "vue-sonner": "^2.0.9"
+    "radix-vue": "^1.9.17",
+    "vue": "^3.5.13"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.18",
     "@vitejs/plugin-vue": "^5.2.1",
-    "@vueuse/core": "^14.1.0",
     "archiver": "^7.0.1",
     "tailwindcss": "^4.1.18",
     "tailwindcss-animate": "^1.0.7",

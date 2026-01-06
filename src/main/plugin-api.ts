@@ -1,9 +1,10 @@
-import { ipcMain, dialog, clipboard, shell, nativeImage } from 'electron'
+import { ipcMain, dialog, clipboard, shell, nativeImage, BrowserWindow } from 'electron'
 import { readFile, writeFile, readdir, stat, mkdir } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { app } from 'electron'
 import { permissionManager } from './permission-manager'
+import { clipboardMonitor } from './clipboard-monitor'
 
 /**
  * 插件 API 处理器
@@ -134,6 +135,36 @@ export class PluginAPI {
       try {
         const image = nativeImage.createFromDataURL(dataUrl)
         clipboard.writeImage(image)
+        return { success: true }
+      } catch (error: unknown) {
+        return { success: false, error: (error as Error).message }
+      }
+    })
+
+    // 剪贴板监控 API
+    ipcMain.handle('plugin-api:clipboard:subscribe', (event) => {
+      try {
+        const pluginId = this.getPluginIdFromEvent(event)
+        permissionManager.requirePermission(pluginId, 'clipboard')
+
+        const window = BrowserWindow.fromWebContents(event.sender)
+        if (window) {
+          clipboardMonitor.subscribe(window)
+        }
+
+        return { success: true }
+      } catch (error: unknown) {
+        return { success: false, error: (error as Error).message }
+      }
+    })
+
+    ipcMain.handle('plugin-api:clipboard:unsubscribe', (event) => {
+      try {
+        const window = BrowserWindow.fromWebContents(event.sender)
+        if (window) {
+          clipboardMonitor.unsubscribe(window)
+        }
+
         return { success: true }
       } catch (error: unknown) {
         return { success: false, error: (error as Error).message }

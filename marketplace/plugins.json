@@ -1,7 +1,32 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-01-05T00:00:00Z",
+  "lastUpdated": "2025-01-06T12:00:00Z",
   "plugins": [
+    {
+      "id": "com.unihub.clipboard-history",
+      "name": "剪贴板历史",
+      "version": "1.0.0",
+      "description": "剪贴板历史管理工具 - 记录、搜索和管理剪贴板历史",
+      "author": {
+        "name": "UniHub Team",
+        "email": "team@unihub.dev",
+        "url": "https://github.com/unihub"
+      },
+      "icon": "https://api.iconify.design/fluent-emoji/clipboard.svg",
+      "category": "tool",
+      "keywords": ["clipboard", "history", "paste", "copy", "剪贴板", "历史记录"],
+      "permissions": ["clipboard", "storage"],
+      "install": {
+        "zip": "https://unihub-1307847329.cos.ap-shanghai.myqcloud.com/official-plugins/clipboard-history/plugin.zip"
+      },
+      "homepage": "https://github.com/t8y2",
+      "repository": "https://github.com/t8y2/unihub",
+      "screenshots": [],
+      "downloads": 0,
+      "rating": 5.0,
+      "createdAt": "2025-01-06T12:00:00Z",
+      "updatedAt": "2025-01-06T12:00:00Z"
+    },
     {
       "id": "com.unihub.excalidraw",
       "name": "Excalidraw 绘图工具",
@@ -82,7 +107,7 @@
         "email": "team@unihub.dev",
         "url": "https://github.com/unihub"
       },
-      "icon": "https://api.iconify.design/fluent-emoji/clipboard.svg",
+      "icon": "https://api.iconify.design/fluent-emoji/memo.svg",
       "category": "tool",
       "keywords": ["todo", "todolist", "task", "gtd", "productivity", "待办", "任务管理"],
       "permissions": ["storage"],
@@ -95,7 +120,7 @@
       "downloads": 0,
       "rating": 5.0,
       "createdAt": "2025-01-05T00:00:00Z",
-      "updatedAt": "2025-01-05T00:00:00Z"
+      "updatedAt": "2025-01-06T12:00:00Z"
     },
     {
       "id": "com.unihub.javascript-formatter",
@@ -120,7 +145,7 @@
       "downloads": 0,
       "rating": 5.0,
       "createdAt": "2025-01-04T00:00:00Z",
-      "updatedAt": "2025-01-04T00:00:00Z"
+      "updatedAt": "2025-01-06T12:00:00Z"
     },
     {
       "id": "com.unihub.jwt-tool",
@@ -145,7 +170,7 @@
       "downloads": 0,
       "rating": 5.0,
       "createdAt": "2025-01-03T00:00:00Z",
-      "updatedAt": "2025-01-03T00:00:00Z"
+      "updatedAt": "2025-01-06T12:00:00Z"
     },
     {
       "id": "com.unihub.h5-formatter",

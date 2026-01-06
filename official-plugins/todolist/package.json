@@ -25,7 +25,7 @@
   "unihub": {
     "id": "com.unihub.todolist",
     "name": "待办清单",
-    "icon": "https://api.iconify.design/fluent-emoji/clipboard.svg",
+    "icon": "https://api.iconify.design/fluent-emoji/memo.svg",
     "category": "tool",
     "permissions": [
       "storage"

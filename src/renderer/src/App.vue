@@ -297,6 +297,9 @@ const toggleTheme = (): void => {
   isDark.value = !isDark.value
   document.documentElement.classList.toggle('dark', isDark.value)
   localStorage.setItem(STORAGE_KEYS.THEME, isDark.value ? 'dark' : 'light')
+
+  // 通知所有插件视图主题已变化
+  window.electron.ipcRenderer.send('theme-changed', isDark.value ? 'dark' : 'light')
 }
 
 // 侧边栏切换

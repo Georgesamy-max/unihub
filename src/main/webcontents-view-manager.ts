@@ -1,4 +1,4 @@
-import { BrowserWindow, WebContentsView } from 'electron'
+import { BrowserWindow, WebContentsView, ipcMain } from 'electron'
 import { join } from 'path'
 import { createLogger } from '../shared/logger'
 
@@ -24,6 +24,11 @@ export class WebContentsViewManager {
    */
   setMainWindow(window: BrowserWindow): void {
     this.mainWindow = window
+
+    // 监听主题变化事件
+    ipcMain.on('theme-changed', (_event, theme: 'light' | 'dark') => {
+      this.broadcastThemeChange(theme)
+    })
   }
 
   /**
@@ -101,6 +106,20 @@ export class WebContentsViewManager {
       view.webContents.executeJavaScript(script).catch((err) => {
         logger.error({ err }, '注入插件 ID 失败')
       })
+
+      // 发送当前主题到新创建的插件
+      if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+        this.mainWindow.webContents
+          .executeJavaScript('document.documentElement.classList.contains("dark")')
+          .then((isDark) => {
+            const theme = isDark ? 'dark' : 'light'
+            view.webContents.send('theme-changed', theme)
+            logger.info({ pluginId, theme }, '已发送初始主题到新插件')
+          })
+          .catch((err) => {
+            logger.error({ err }, '获取主窗口主题失败')
+          })
+      }
     })
 
     // 开发模式下打开 DevTools（已禁用）
@@ -392,9 +411,25 @@ export class WebContentsViewManager {
   }
 
   /**
+   * 广播主题变化到所有插件视图
+   */
+  private broadcastThemeChange(theme: 'light' | 'dark'): void {
+    logger.info({ theme }, '广播主题变化到所有插件')
+    for (const [pluginId, view] of this.views) {
+      if (!view.webContents.isDestroyed()) {
+        view.webContents.send('theme-changed', theme)
+        logger.info({ pluginId, theme }, '已通知插件主题变化')
+      }
+    }
+  }
+
+  /**
    * 清理所有视图
    */
   cleanup(): void {
+    // 移除主题变化监听器
+    ipcMain.removeAllListeners('theme-changed')
+
     for (const [pluginId] of this.views) {
       this.removePluginView(pluginId)
     }

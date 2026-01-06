@@ -44,7 +44,19 @@ const api = {
     readText: () => ipcRenderer.invoke('plugin-api:clipboard:readText'),
     writeText: (text: string) => ipcRenderer.invoke('plugin-api:clipboard:writeText', text),
     readImage: () => ipcRenderer.invoke('plugin-api:clipboard:readImage'),
-    writeImage: (dataUrl: string) => ipcRenderer.invoke('plugin-api:clipboard:writeImage', dataUrl)
+    writeImage: (dataUrl: string) => ipcRenderer.invoke('plugin-api:clipboard:writeImage', dataUrl),
+    subscribe: () => ipcRenderer.invoke('plugin-api:clipboard:subscribe'),
+    unsubscribe: () => ipcRenderer.invoke('plugin-api:clipboard:unsubscribe'),
+    onChange: (
+      callback: (data: { content: string; timestamp: number }) => void
+    ): (() => Electron.IpcRenderer) => {
+      const handler = (
+        _event: Electron.IpcRendererEvent,
+        data: { content: string; timestamp: number }
+      ): void => callback(data)
+      ipcRenderer.on('clipboard-changed', handler)
+      return (): Electron.IpcRenderer => ipcRenderer.removeListener('clipboard-changed', handler)
+    }
   },
   // 系统 API
   system: {
@@ -193,6 +205,24 @@ const unihubAPI = {
     writeImage: async (dataUrl: string) => {
       const result = await ipcRenderer.invoke('plugin-api:clipboard:writeImage', dataUrl)
       if (!result.success) throw new Error(result.error || '写入图片失败')
+    },
+    subscribe: async () => {
+      const result = await ipcRenderer.invoke('plugin-api:clipboard:subscribe')
+      if (!result.success) throw new Error(result.error || '订阅剪贴板失败')
+    },
+    unsubscribe: async () => {
+      const result = await ipcRenderer.invoke('plugin-api:clipboard:unsubscribe')
+      if (!result.success) throw new Error(result.error || '取消订阅失败')
+    },
+    onChange: (
+      callback: (data: { content: string; timestamp: number }) => void
+    ): (() => Electron.IpcRenderer) => {
+      const handler = (
+        _event: Electron.IpcRendererEvent,
+        data: { content: string; timestamp: number }
+      ): void => callback(data)
+      ipcRenderer.on('clipboard-changed', handler)
+      return (): Electron.IpcRenderer => ipcRenderer.removeListener('clipboard-changed', handler)
     }
   },
   // 文件系统 API

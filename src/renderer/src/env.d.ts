@@ -206,6 +206,9 @@ declare global {
         writeText: (text: string) => Promise<void>
         readImage: () => Promise<string | null>
         writeImage: (dataUrl: string) => Promise<void>
+        subscribe: () => Promise<void>
+        unsubscribe: () => Promise<void>
+        onChange: (callback: (data: { content: string; timestamp: number }) => void) => () => void
       }
       fs: {
         readFile: (path: string) => Promise<string | null>
