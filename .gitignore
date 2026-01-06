@@ -10,3 +10,4 @@ out
 # Vercel
 .vercel
 stats-api/.vercel
+.vscode

@@ -3,6 +3,40 @@
   "lastUpdated": "2025-01-05T00:00:00Z",
   "plugins": [
     {
+      "id": "com.excalidraw.excalidraw",
+      "name": "Excalidraw 绘图工具",
+      "version": "0.18.0",
+      "description": "Excalidraw 离线绘图工具 - 手绘风格的图表和白板工具，支持本地保存和加载",
+      "author": {
+        "name": "Excalidraw Contributors",
+        "url": "https://github.com/excalidraw/excalidraw"
+      },
+      "icon": "https://excalidraw.com/favicon.svg",
+      "category": "tool",
+      "keywords": [
+        "excalidraw",
+        "drawing",
+        "diagram",
+        "whiteboard",
+        "sketch",
+        "绘图",
+        "图表",
+        "白板",
+        "手绘"
+      ],
+      "permissions": ["clipboard", "fs"],
+      "install": {
+        "zip": "https://unihub-1307847329.cos.ap-shanghai.myqcloud.com/official-plugins/excalidraw/plugin.zip"
+      },
+      "homepage": "https://excalidraw.com",
+      "repository": "https://github.com/excalidraw/excalidraw",
+      "screenshots": [],
+      "downloads": 0,
+      "rating": 5.0,
+      "createdAt": "2025-01-06T00:00:00Z",
+      "updatedAt": "2025-01-06T00:00:00Z"
+    },
+    {
       "id": "com.baiy.ctool",
       "name": "Ctool 开发工具集",
       "version": "2.3.0",
