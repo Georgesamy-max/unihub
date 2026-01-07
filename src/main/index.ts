@@ -14,7 +14,7 @@ import { dbManager } from './db-manager'
 import { searchWindowManager } from './search-window-manager'
 import { updaterManager } from './updater-manager'
 import { pathToFileURL } from 'url'
-import { createLogger } from '../shared/logger'
+import { createLogger, closeLogger } from '../shared/logger'
 import { appScanner } from './app-scanner'
 
 const logger = createLogger('main')
@@ -221,11 +221,17 @@ app.on('window-all-closed', () => {
 })
 
 // 应用退出前清理资源
-app.on('before-quit', () => {
+app.on('before-quit', async () => {
   // 设置退出标志，允许窗口真正关闭
   isQuitting = true
   // 清理所有快捷键
   shortcutManager.cleanup()
+  // 关闭日志系统
+  try {
+    await closeLogger()
+  } catch {
+    // 忽略日志关闭错误
+  }
 })
 
 function setupIpcHandlers(): void {
