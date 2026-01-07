@@ -1,7 +1,32 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-01-06T12:00:00Z",
+  "lastUpdated": "2025-01-07T12:00:00Z",
   "plugins": [
+    {
+      "id": "com.unihub.code-diff",
+      "name": "代码对比工具",
+      "version": "1.0.0",
+      "description": "代码对比工具 - 基于 Monaco Editor 的强大代码差异对比功能，支持语法高亮和多种编程语言",
+      "author": {
+        "name": "UniHub Team",
+        "email": "team@unihub.dev",
+        "url": "https://github.com/unihub"
+      },
+      "icon": "https://api.iconify.design/vscode-icons/file-type-diff.svg",
+      "category": "tool",
+      "keywords": ["code", "diff", "compare", "monaco", "代码对比", "差异比较"],
+      "permissions": ["clipboard", "storage"],
+      "install": {
+        "zip": "https://unihub-1307847329.cos.ap-shanghai.myqcloud.com/official-plugins/code-diff/plugin.zip"
+      },
+      "homepage": "https://github.com/t8y2",
+      "repository": "https://github.com/t8y2/unihub",
+      "screenshots": [],
+      "downloads": 0,
+      "rating": 5.0,
+      "createdAt": "2025-01-07T12:00:00Z",
+      "updatedAt": "2025-01-07T12:00:00Z"
+    },
     {
       "id": "com.unihub.markdown-editor",
       "name": "Markdown 编辑器",
