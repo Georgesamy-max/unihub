@@ -67,6 +67,9 @@ function createWindow(): void {
     }
   })
 
+  let shortcutsRegistered = false
+  let updateCheckScheduled = false
+
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show()
     // 设置主窗口到 WebContentsView 管理器
@@ -77,13 +80,19 @@ function createWindow(): void {
       updaterManager.setMainWindow(mainWindow)
     }
 
-    // 注册全局快捷键
-    registerGlobalShortcuts()
+    // 注册全局快捷键（只注册一次）
+    if (!shortcutsRegistered) {
+      shortcutsRegistered = true
+      registerGlobalShortcuts()
+    }
 
-    // 启动后 3 秒检查更新（静默）
-    setTimeout(() => {
-      updaterManager.checkForUpdates(true)
-    }, 3000)
+    // 启动后 3 秒检查更新（静默，只检查一次）
+    if (!updateCheckScheduled) {
+      updateCheckScheduled = true
+      setTimeout(() => {
+        updaterManager.checkForUpdates(true)
+      }, 3000)
+    }
   })
 
   // 监听窗口大小变化，通知渲染进程更新布局
@@ -93,13 +102,13 @@ function createWindow(): void {
     }
   })
 
-  // 拦截窗口关闭事件，改为隐藏窗口（而不是销毁）
+  // 拦截窗口关闭事件
   mainWindow.on('close', (event) => {
+    // 只有真正退出时才允许关闭，其他情况都阻止
     if (process.platform === 'darwin' && !isQuitting) {
-      // macOS: 如果不是真正退出，阻止窗口关闭，改为隐藏
+      // macOS: 阻止关闭，但不隐藏窗口（Cmd+W 不应该隐藏窗口）
       event.preventDefault()
-      mainWindow?.hide()
-      logger.info('窗口已隐藏（macOS）')
+      // 不做任何事，让窗口保持显示
     } else {
       // Windows/Linux 或 macOS 真正退出时：允许关闭
       logger.info('窗口正在关闭')
@@ -110,9 +119,10 @@ function createWindow(): void {
   mainWindow.webContents.on('before-input-event', (event, input) => {
     // 检查是否是 Cmd+W (Mac) 或 Ctrl+W (Windows/Linux)
     if (input.type === 'keyDown' && input.key === 'w' && (input.meta || input.control)) {
+      logger.info('主窗口捕获 Cmd+W')
       // 阻止默认行为，让渲染进程处理
       event.preventDefault()
-      // 通知渲染进程处理关闭标签或窗口
+      // 通知渲染进程处理关闭标签
       mainWindow?.webContents.send('handle-close-tab')
     }
 
@@ -443,6 +453,13 @@ function setupIpcHandlers(): void {
     } else {
       // Windows/Linux: 关闭窗口（会触发应用退出）
       mainWindow?.close()
+    }
+  })
+
+  // 聚焦主窗口（用于切换到内置组件时）
+  ipcMain.on('focus-main-window', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.focus()
     }
   })
 

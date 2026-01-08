@@ -235,6 +235,9 @@ export class WebContentsViewManager {
     // 发送插件可见性事件
     view.webContents.send('plugin-visibility-changed', true)
     logger.debug({ pluginId }, '插件已显示')
+
+    // 聚焦到插件视图，确保键盘事件被正确捕获
+    view.webContents.focus()
   }
 
   /**
@@ -265,6 +268,8 @@ export class WebContentsViewManager {
     const view = this.views.get(pluginId)
     if (!view) return
 
+    logger.info({ pluginId }, '🗑️ 销毁插件视图')
+
     // 先隐藏
     this.hidePluginView(pluginId)
 
@@ -279,6 +284,11 @@ export class WebContentsViewManager {
     const index = this.lruQueue.indexOf(pluginId)
     if (index > -1) {
       this.lruQueue.splice(index, 1)
+    }
+
+    // 确保焦点回到主窗口
+    if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+      this.mainWindow.focus()
     }
   }
 

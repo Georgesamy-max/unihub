@@ -30,47 +30,72 @@ const updateNotificationRef = ref<InstanceType<typeof UpdateNotification> | null
 
 // 防止快速连续按 cmd+w 导致的竞态条件（组件级别的锁）
 let isClosingTab = false
-let pendingWindowClose: ReturnType<typeof setTimeout> | null = null
-const CLOSE_TAB_DEBOUNCE_MS = 50 // 标签关闭防抖时间
-const WINDOW_CLOSE_DELAY_MS = 100 // 窗口关闭延迟时间
+const CLOSE_TAB_DEBOUNCE_MS = 100 // 标签关闭防抖时间
 
 // 检查是否有 plugin 类型的标签（使用 WebContentsView）
 const hasPluginTabs = (): boolean => {
   return tabs.value.some((t) => t.type === 'plugin')
 }
 
+// 主页标签动画效果（假装关闭再打开）
+const animateHomeTab = (): void => {
+  const homeTab = tabs.value.find((t) => t.pluginId === 'home')
+  if (!homeTab) return
+
+  // 临时移除主页标签触发离开动画
+  const homeTabIndex = tabs.value.findIndex((t) => t.id === homeTab.id)
+  tabs.value.splice(homeTabIndex, 1)
+  activeTabId.value = ''
+
+  // 短暂延迟后重新添加，触发进入动画
+  setTimeout(() => {
+    const newHomeTab = {
+      id: Date.now().toString(),
+      pluginId: 'home',
+      title: '主页',
+      type: 'plugin' as const
+    }
+    tabs.value.push(newHomeTab)
+    activeTabId.value = newHomeTab.id
+  }, 150)
+}
+
 // 统一的关闭标签处理函数
 const handleCloseTabRequest = (): void => {
-  // 如果有待执行的窗口关闭，取消它
-  if (pendingWindowClose) {
-    clearTimeout(pendingWindowClose)
-    pendingWindowClose = null
-  }
-
   // 检查锁
   if (isClosingTab) {
     return
   }
 
-  const currentTabCount = tabs.value.length
+  // 如果只剩一个标签
+  if (tabs.value.length === 1) {
+    const currentTab = tabs.value[0]
 
-  if (currentTabCount === 0) {
-    // 没有标签页，关闭窗口
-    // 只有在之前有 plugin 标签时才延迟（防止 WebContentsView 焦点切换问题）
-    if (pendingWindowClose === null) {
-      // 使用短延迟确保不会误关闭
-      pendingWindowClose = setTimeout(() => {
-        pendingWindowClose = null
-        if (tabs.value.length === 0) {
-          window.electron.ipcRenderer.send('window:close')
-        }
-      }, WINDOW_CLOSE_DELAY_MS)
+    // 如果是主页，播放动画效果
+    if (currentTab.pluginId === 'home') {
+      isClosingTab = true
+      animateHomeTab()
+      setTimeout(() => {
+        isClosingTab = false
+      }, 200)
+      return
     }
-  } else if (activeTabId.value) {
+
+    // 如果不是主页，关闭它并打开主页
+    isClosingTab = true
+    closeTab(currentTab.id)
+    addHomeTab()
+    setTimeout(() => {
+      isClosingTab = false
+    }, CLOSE_TAB_DEBOUNCE_MS)
+    return
+  }
+
+  // 有多个标签页，关闭当前标签
+  if (activeTabId.value) {
     const currentTab = tabs.value.find((t) => t.id === activeTabId.value)
     const isPluginTab = currentTab?.type === 'plugin'
 
-    // 有标签页，关闭当前标签
     isClosingTab = true
     closeTab(activeTabId.value)
 
@@ -393,8 +418,8 @@ const handleOpenApp = async (appPath: string): Promise<void> => {
 const tabs = ref<Tab[]>([])
 const activeTabId = ref('')
 
-// 处理第三方插件视图的显示/隐藏
-const handleThirdPartyPlugin = (tabId: string, action: 'open' | 'close'): void => {
+// 处理第三方插件视图的显示/隐藏/销毁
+const handleThirdPartyPlugin = (tabId: string, action: 'open' | 'close' | 'destroy'): void => {
   if (!tabId) return
 
   const tab = tabs.value.find((t) => t.id === tabId)
@@ -406,10 +431,20 @@ const handleThirdPartyPlugin = (tabId: string, action: 'open' | 'close'): void =
   }
 }
 
-// 监听标签切换，自动显示/隐藏第三方插件视图
+// 监听标签切换，显示/隐藏第三方插件视图（不销毁）
 watch(activeTabId, (newTabId, oldTabId) => {
   handleThirdPartyPlugin(oldTabId, 'close')
   handleThirdPartyPlugin(newTabId, 'open')
+
+  // 如果新标签不是第三方插件，需要聚焦主窗口以接收键盘事件
+  const newTab = tabs.value.find((t) => t.id === newTabId)
+  if (newTab) {
+    const plugin = pluginRegistry.get(newTab.pluginId)
+    if (!plugin?.metadata.isThirdParty) {
+      // 内置组件，聚焦主窗口
+      window.electron.ipcRenderer.send('focus-main-window')
+    }
+  }
 })
 
 // 获取所有启用的插件
@@ -477,9 +512,7 @@ const openTab = (pluginId: string): void => {
     (t) => t.pluginId === pluginId && t.type === 'plugin'
   )
 
-  if (plugin.metadata.isThirdParty) {
-    window.api.plugin.open(pluginId)
-  }
+  // 第三方插件的视图由组件自己在 mounted 中打开，这里不需要调用
 }
 
 // 打开系统页面
@@ -500,7 +533,8 @@ const closeTab = (tabId: string): void => {
   const index = tabs.value.findIndex((t) => t.id === tabId)
   if (index === -1) return
 
-  handleThirdPartyPlugin(tabId, 'close')
+  // 销毁第三方插件视图
+  handleThirdPartyPlugin(tabId, 'destroy')
 
   // 切换到相邻标签
   if (activeTabId.value === tabId) {
@@ -520,14 +554,13 @@ const closeOtherTabs = (tabId: string): void => {
   const tab = tabs.value.find((t) => t.id === tabId)
   if (!tab) return
 
-  // 关闭所有第三方插件
+  // 销毁所有其他第三方插件
   tabs.value.forEach((t) => {
     if (t.id !== tabId) {
-      handleThirdPartyPlugin(t.id, 'close')
+      handleThirdPartyPlugin(t.id, 'destroy')
     }
   })
 
-  // 只保留当前标签
   tabs.value = [tab]
   activeTabId.value = tabId
 }
@@ -537,15 +570,13 @@ const closeLeftTabs = (tabId: string): void => {
   const index = tabs.value.findIndex((t) => t.id === tabId)
   if (index === -1 || index === 0) return
 
-  // 关闭左侧所有第三方插件
+  // 销毁左侧所有第三方插件
   for (let i = 0; i < index; i++) {
-    handleThirdPartyPlugin(tabs.value[i].id, 'close')
+    handleThirdPartyPlugin(tabs.value[i].id, 'destroy')
   }
 
-  // 删除左侧标签
   tabs.value.splice(0, index)
 
-  // 如果当前激活的标签被关闭了，激活目标标签
   if (!tabs.value.find((t) => t.id === activeTabId.value)) {
     activeTabId.value = tabId
   }
@@ -556,15 +587,13 @@ const closeRightTabs = (tabId: string): void => {
   const index = tabs.value.findIndex((t) => t.id === tabId)
   if (index === -1 || index === tabs.value.length - 1) return
 
-  // 关闭右侧所有第三方插件
+  // 销毁右侧所有第三方插件
   for (let i = index + 1; i < tabs.value.length; i++) {
-    handleThirdPartyPlugin(tabs.value[i].id, 'close')
+    handleThirdPartyPlugin(tabs.value[i].id, 'destroy')
   }
 
-  // 删除右侧标签
   tabs.value.splice(index + 1)
 
-  // 如果当前激活的标签被关闭了，激活目标标签
   if (!tabs.value.find((t) => t.id === activeTabId.value)) {
     activeTabId.value = tabId
   }
