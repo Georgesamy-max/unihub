@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch, provide } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch, provide, nextTick } from 'vue'
 import { pluginRegistry, initPlugins } from './plugins'
 import { pluginInstaller } from './plugins/marketplace/installer'
 import { PluginIcon } from './components/ui/plugin-icon'
@@ -24,6 +24,19 @@ const sidebarCollapsed = ref(false)
 const showGlobalSearch = ref(false)
 const expandedCategories = ref(new Set(DEFAULT_CATEGORIES))
 const globalSearchShortcut = ref('⌘K')
+
+// 格式化快捷键显示（Command -> ⌘, Ctrl -> ⌃, Alt -> ⌥, Shift -> ⇧）
+const formatShortcut = (shortcut: string): string => {
+  return shortcut
+    .replace(/Command\+?/gi, '⌘')
+    .replace(/Ctrl\+?/gi, '⌃')
+    .replace(/Alt\+?/gi, '⌥')
+    .replace(/Shift\+?/gi, '⇧')
+    .replace(/\+/g, '')
+}
+
+// 格式化后的快捷键显示
+const formattedShortcut = computed(() => formatShortcut(globalSearchShortcut.value))
 
 // 更新通知组件引用
 const updateNotificationRef = ref<InstanceType<typeof UpdateNotification> | null>(null)
@@ -417,6 +430,42 @@ const handleOpenApp = async (appPath: string): Promise<void> => {
 // 标签管理
 const tabs = ref<Tab[]>([])
 const activeTabId = ref('')
+const tabBarRef = ref<HTMLElement | null>(null)
+
+// 滚动标签栏到激活的标签
+const scrollToActiveTab = (tabId: string, isNew: boolean): void => {
+  if (isNew) {
+    // 新建的标签，滚动到最右边
+    // 需要等待新标签渲染完成
+    nextTick(() => {
+      setTimeout(() => {
+        if (!tabBarRef.value) return
+        const container = tabBarRef.value
+        container.scrollTo({ left: container.scrollWidth, behavior: 'smooth' })
+      }, 150) // 等待 TransitionGroup 动画开始
+    })
+  } else {
+    // 已有的标签，尽量居中显示
+    nextTick(() => {
+      setTimeout(() => {
+        if (!tabBarRef.value) return
+        const container = tabBarRef.value
+        const tabElement = container.querySelector(`[data-tab-id="${tabId}"]`) as HTMLElement
+        if (!tabElement) return
+
+        const tabRect = tabElement.getBoundingClientRect()
+        const containerRect = container.getBoundingClientRect()
+
+        // 计算让标签居中需要的滚动位置
+        const tabCenter = tabRect.left + tabRect.width / 2
+        const containerCenter = containerRect.left + containerRect.width / 2
+        const scrollOffset = tabCenter - containerCenter
+
+        container.scrollBy({ left: scrollOffset, behavior: 'smooth' })
+      }, 50)
+    })
+  }
+}
 
 // 处理第三方插件视图的显示/隐藏/销毁
 const handleThirdPartyPlugin = (tabId: string, action: 'open' | 'close' | 'destroy'): void => {
@@ -483,6 +532,7 @@ const createOrActivateTab = (
   if (existingTab) {
     console.log('[createOrActivateTab] 激活已存在的标签:', existingTab.id)
     activeTabId.value = existingTab.id
+    scrollToActiveTab(existingTab.id, false)
     return
   }
 
@@ -495,6 +545,7 @@ const createOrActivateTab = (
   console.log('[createOrActivateTab] 创建新标签:', newTab)
   tabs.value.push(newTab)
   activeTabId.value = newTab.id
+  scrollToActiveTab(newTab.id, true)
   console.log('[createOrActivateTab] 标签创建完成，当前标签数:', tabs.value.length)
 }
 
@@ -950,7 +1001,7 @@ const addHomeTab = (): void => {
           <!-- 全局搜索按钮 -->
           <button
             class="flex items-center gap-2 px-3 py-1 rounded hover:bg-gray-300/50 dark:hover:bg-gray-600/50 transition-colors"
-            :title="`搜索插件 (${globalSearchShortcut})`"
+            :title="`搜索插件 (${formattedShortcut})`"
             @click="showGlobalSearch = true"
           >
             <svg
@@ -967,19 +1018,21 @@ const addHomeTab = (): void => {
               />
             </svg>
             <span class="text-xs text-gray-600 dark:text-gray-400">搜索</span>
-            <Kbd>{{ globalSearchShortcut }}</Kbd>
+            <Kbd>{{ formattedShortcut }}</Kbd>
           </button>
         </div>
 
         <!-- 标签栏 -->
         <div
           v-if="tabs.length > 0"
+          ref="tabBarRef"
           class="flex-1 flex items-center h-full overflow-x-auto overflow-y-hidden scrollbar-hide"
         >
           <TransitionGroup name="tab" tag="div" class="flex items-center h-full">
             <div
               v-for="(tab, index) in tabs"
               :key="tab.id"
+              :data-tab-id="tab.id"
               :class="[
                 'group h-full flex items-center gap-2 px-4 cursor-pointer relative flex-shrink-0 no-drag min-w-0 max-w-[200px]',
                 'transition-all duration-200 ease-out',
