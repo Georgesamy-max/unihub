@@ -24,7 +24,7 @@
   },
   "unihub": {
     "id": "com.unihub.curl-converter",
-    "name": "Windows Curl 转换器",
+    "name": "Win Curl 转换器",
     "icon": "https://api.iconify.design/mdi/swap-horizontal.svg",
     "category": "tool",
     "permissions": [
