@@ -1,7 +1,32 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-01-08T12:00:00Z",
+  "lastUpdated": "2025-01-10T12:00:00Z",
   "plugins": [
+    {
+      "id": "com.unihub.curl-converter",
+      "name": "Windows Curl 转换器",
+      "version": "1.0.0",
+      "description": "Shell curl 命令转换为 Windows curl 格式 - 自动处理单引号转双引号、JSON 内双引号转义、换行符处理",
+      "author": {
+        "name": "UniHub Team",
+        "email": "team@unihub.dev",
+        "url": "https://github.com/unihub"
+      },
+      "icon": "https://api.iconify.design/mdi/swap-horizontal.svg",
+      "category": "tool",
+      "keywords": ["curl", "windows", "shell", "bash", "convert", "命令行", "转换"],
+      "permissions": ["clipboard"],
+      "install": {
+        "zip": "https://unihub-1307847329.cos.ap-shanghai.myqcloud.com/official-plugins/curl-converter/plugin.zip"
+      },
+      "homepage": "https://github.com/t8y2",
+      "repository": "https://github.com/t8y2/unihub",
+      "screenshots": [],
+      "downloads": 0,
+      "rating": 5.0,
+      "createdAt": "2025-01-10T12:00:00Z",
+      "updatedAt": "2025-01-10T12:00:00Z"
+    },
     {
       "id": "com.unihub.2fa-authenticator",
       "name": "2FA 验证器",
