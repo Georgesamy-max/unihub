@@ -3,6 +3,31 @@
   "lastUpdated": "2025-01-10T12:00:00Z",
   "plugins": [
     {
+      "id": "com.unihub.pdf-merger",
+      "name": "PDF 合并工具",
+      "version": "1.0.0",
+      "description": "PDF 合并工具 - 支持多个 PDF 文件合并、拖拽排序、预览和下载，所有处理均在本地完成",
+      "author": {
+        "name": "UniHub Team",
+        "email": "team@unihub.dev",
+        "url": "https://github.com/unihub"
+      },
+      "icon": "https://api.iconify.design/vscode-icons/file-type-pdf2.svg",
+      "category": "tool",
+      "keywords": ["pdf", "merge", "combine", "PDF合并", "文档处理"],
+      "permissions": ["clipboard"],
+      "install": {
+        "zip": "https://unihub-1307847329.cos.ap-shanghai.myqcloud.com/official-plugins/pdf-merger/plugin.zip"
+      },
+      "homepage": "https://github.com/t8y2",
+      "repository": "https://github.com/t8y2/unihub",
+      "screenshots": [],
+      "downloads": 0,
+      "rating": 5.0,
+      "createdAt": "2025-01-10T12:00:00Z",
+      "updatedAt": "2025-01-10T12:00:00Z"
+    },
+    {
       "id": "com.unihub.image-compressor",
       "name": "图片压缩工具",
       "version": "1.0.0",
