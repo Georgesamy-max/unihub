@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { PluginIcon } from '@/components/ui/plugin-icon'
+import { Loader } from '@/components/ui/loader'
 import {
   Select,
   SelectContent,
@@ -377,13 +378,8 @@ onUnmounted(() => {
     <!-- 内容区 -->
     <div class="flex-1 overflow-y-auto p-4">
       <!-- 加载中 -->
-      <div v-if="loading" class="flex items-center justify-center h-64">
-        <div class="text-center">
-          <div
-            class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"
-          ></div>
-          <p class="text-sm text-gray-600 dark:text-gray-400">加载插件列表...</p>
-        </div>
+      <div v-if="loading" class="flex items-center justify-center min-h-[calc(100vh-200px)]">
+        <Loader text="加载插件列表..." />
       </div>
 
       <!-- 错误提示 -->
