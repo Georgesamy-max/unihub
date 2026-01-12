@@ -53,21 +53,22 @@ export const builtinPlugins: Plugin[] = [
     enabled: true,
     config: { language: 'css', title: 'CSS' }
   },
-  {
-    metadata: {
-      id: 'html',
-      name: 'HTML',
-      description: 'HTML 代码格式化',
-      version: '1.0.0',
-      author: 'UniHub',
-      icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4',
-      category: 'formatter',
-      keywords: ['html', 'markup', 'format', '格式化']
-    },
-    component: CodeFormatter,
-    enabled: true,
-    config: { language: 'html', title: 'HTML' }
-  },
+  // HTML 格式化已迁移为官方插件，可在插件市场安装
+  // {
+  //   metadata: {
+  //     id: 'html',
+  //     name: 'HTML',
+  //     description: 'HTML 代码格式化',
+  //     version: '1.0.0',
+  //     author: 'UniHub',
+  //     icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4',
+  //     category: 'formatter',
+  //     keywords: ['html', 'markup', 'format', '格式化']
+  //   },
+  //   component: CodeFormatter,
+  //   enabled: true,
+  //   config: { language: 'html', title: 'HTML' }
+  // },
 
   // 工具
   // JWT 工具已迁移为官方插件，可在插件市场安装

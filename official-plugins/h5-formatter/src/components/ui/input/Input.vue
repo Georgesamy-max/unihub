@@ -1,38 +1,36 @@
 <script setup lang="ts">
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
+import { computed } from 'vue'
+
 interface Props {
   modelValue?: string | number
   type?: string
-  min?: number
-  max?: number
   placeholder?: string
   class?: string
-}
-
-interface Emits {
-  (e: 'update:modelValue', value: string | number): void
+  min?: number
+  max?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'text'
 })
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits<{
+  'update:modelValue': [value: string | number]
+}>()
 
-const handleInput = (e: Event) => {
-  const target = e.target as HTMLInputElement
-  emit('update:modelValue', props.type === 'number' ? Number(target.value) : target.value)
-}
+const value = computed({
+  get: () => props.modelValue,
+  set: (val) => emit('update:modelValue', val)
+})
 </script>
 
 <template>
   <input
-    :value="modelValue"
+    v-model="value"
     :type="type"
+    :placeholder="placeholder"
     :min="min"
     :max="max"
-    :placeholder="placeholder"
     :class="`flex h-9 w-full rounded-md border border-gray-300 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 ${props.class || ''}`"
-    @input="handleInput"
   />
 </template>
