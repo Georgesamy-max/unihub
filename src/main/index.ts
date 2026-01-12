@@ -10,7 +10,7 @@ import { registerDevModeHandlers } from './ipc-handlers'
 import { webContentsViewManager } from './webcontents-view-manager'
 import { shortcutManager } from './shortcut-manager'
 import { settingsManager } from './settings-manager'
-import { dbManager } from './db-manager'
+import { lmdbManager } from './lmdb-manager'
 import { searchWindowManager } from './search-window-manager'
 import { updaterManager } from './updater-manager'
 import { pathToFileURL } from 'url'
@@ -413,34 +413,34 @@ function setupIpcHandlers(): void {
 
   // 数据库相关 IPC
   ipcMain.handle('db:addFavorite', (_, pluginId: string) => {
-    dbManager.addFavorite(pluginId)
+    lmdbManager.addFavorite(pluginId)
     return { success: true }
   })
 
   ipcMain.handle('db:removeFavorite', (_, pluginId: string) => {
-    dbManager.removeFavorite(pluginId)
+    lmdbManager.removeFavorite(pluginId)
     return { success: true }
   })
 
   ipcMain.handle('db:isFavorite', (_, pluginId: string) => {
-    return dbManager.isFavorite(pluginId)
+    return lmdbManager.isFavorite(pluginId)
   })
 
   ipcMain.handle('db:getFavorites', () => {
-    return dbManager.getFavorites()
+    return lmdbManager.getFavorites()
   })
 
   ipcMain.handle('db:addRecent', (_, pluginId: string) => {
-    dbManager.addRecent(pluginId)
+    lmdbManager.addRecent(pluginId)
     return { success: true }
   })
 
   ipcMain.handle('db:getRecents', (_, limit?: number) => {
-    return dbManager.getRecents(limit)
+    return lmdbManager.getRecents(limit)
   })
 
   ipcMain.handle('db:clearRecents', () => {
-    dbManager.clearRecents()
+    lmdbManager.clearRecents()
     return { success: true }
   })
 

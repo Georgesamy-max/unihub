@@ -5,7 +5,7 @@ import { exec } from 'child_process'
 import { promisify } from 'util'
 import { readdir, stat } from 'fs/promises'
 import { join } from 'path'
-import { dbManager, type CachedApp } from './db-manager'
+import { lmdbManager, type CachedApp } from './lmdb-manager'
 
 const execAsync = promisify(exec)
 
@@ -59,7 +59,7 @@ export class AppScanner {
     }
 
     // 尝试从数据库加载缓存
-    const cachedApps = dbManager.getCachedApps()
+    const cachedApps = lmdbManager.getCachedApps()
     if (cachedApps.length > 0) {
       // 检查缓存是否还有效（24小时内）
       const oldestCache = Math.min(...cachedApps.map((app) => app.cachedAt))
@@ -94,7 +94,7 @@ export class AppScanner {
     const now = Date.now()
 
     // 尝试从数据库快速加载（不包含图标）
-    const cachedApps = dbManager.getCachedAppsWithoutIcons()
+    const cachedApps = lmdbManager.getCachedAppsWithoutIcons()
     if (cachedApps.length > 0) {
       const oldestCache = Math.min(...cachedApps.map((app) => app.cachedAt))
       if (now - oldestCache < this.CACHE_DURATION) {
@@ -132,7 +132,7 @@ export class AppScanner {
     for (let i = 0; i < appPaths.length; i += batchSize) {
       const batch = appPaths.slice(i, i + batchSize)
       const promises = batch.map(async (path) => {
-        const icon = dbManager.getAppIcon(path)
+        const icon = lmdbManager.getAppIcon(path)
         if (icon) {
           iconMap.set(path, icon)
         }
@@ -170,7 +170,7 @@ export class AppScanner {
    */
   async getAppIcon(appPath: string): Promise<string | undefined> {
     // 先从数据库查找
-    const cachedApps = dbManager.getCachedApps()
+    const cachedApps = lmdbManager.getCachedApps()
     const cachedApp = cachedApps.find((app) => app.path === appPath)
 
     if (cachedApp?.icon) {
@@ -245,7 +245,7 @@ export class AppScanner {
 
       // 保存到数据库缓存
       const cachedApps = this.convertLocalAppsToCached(apps, pathModifiedMap)
-      dbManager.cacheApps(cachedApps)
+      lmdbManager.cacheApps(cachedApps)
 
       const endTime = performance.now()
       logger.info(
@@ -494,7 +494,7 @@ export class AppScanner {
     this.apps = []
     this.lastScanTime = 0
     // 清除数据库缓存
-    dbManager.clearAppCache()
+    lmdbManager.clearAppCache()
     await this.scan()
   }
 
@@ -502,7 +502,7 @@ export class AppScanner {
    * 获取缓存统计信息
    */
   getCacheStats(): { appCount: number; oldestCache: number; newestCache: number } {
-    return dbManager.getCacheStats()
+    return lmdbManager.getCacheStats()
   }
 
   /**

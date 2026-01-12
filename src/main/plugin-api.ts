@@ -1,10 +1,10 @@
 import { ipcMain, dialog, clipboard, shell, nativeImage, BrowserWindow } from 'electron'
 import { readFile, writeFile, readdir, stat, mkdir } from 'fs/promises'
 import { existsSync } from 'fs'
-import { join } from 'path'
 import { app } from 'electron'
 import { permissionManager } from './permission-manager'
 import { clipboardMonitor } from './clipboard-monitor'
+import { lmdbManager } from './lmdb-manager'
 
 /**
  * 插件 API 处理器
@@ -246,22 +246,11 @@ export class PluginAPI {
       }
     })
 
-    // 存储 API
-    const storageDir = join(app.getPath('userData'), 'plugin-storage')
-    if (!existsSync(storageDir)) {
-      mkdir(storageDir, { recursive: true })
-    }
-
+    // 存储 API（使用 LMDB）
     ipcMain.handle('plugin-api:storage:get', async (_, pluginId: string, key: string) => {
       try {
-        const filePath = join(storageDir, `${pluginId}.json`)
-        if (!existsSync(filePath)) {
-          return { success: true, data: null }
-        }
-
-        const content = await readFile(filePath, 'utf-8')
-        const data = JSON.parse(content)
-        return { success: true, data: data[key] || null }
+        const data = lmdbManager.getPluginStorage(pluginId, key)
+        return { success: true, data: data || null }
       } catch (error: unknown) {
         return { success: false, error: (error as Error).message }
       }
@@ -271,16 +260,7 @@ export class PluginAPI {
       'plugin-api:storage:set',
       async (_, pluginId: string, key: string, value: unknown) => {
         try {
-          const filePath = join(storageDir, `${pluginId}.json`)
-          let data: Record<string, unknown> = {}
-
-          if (existsSync(filePath)) {
-            const content = await readFile(filePath, 'utf-8')
-            data = JSON.parse(content)
-          }
-
-          data[key] = value
-          await writeFile(filePath, JSON.stringify(data, null, 2))
+          lmdbManager.setPluginStorage(pluginId, key, value)
           return { success: true }
         } catch (error: unknown) {
           return { success: false, error: (error as Error).message }
@@ -290,15 +270,7 @@ export class PluginAPI {
 
     ipcMain.handle('plugin-api:storage:delete', async (_, pluginId: string, key: string) => {
       try {
-        const filePath = join(storageDir, `${pluginId}.json`)
-        if (!existsSync(filePath)) {
-          return { success: true }
-        }
-
-        const content = await readFile(filePath, 'utf-8')
-        const data = JSON.parse(content) as Record<string, unknown>
-        delete data[key]
-        await writeFile(filePath, JSON.stringify(data, null, 2))
+        lmdbManager.deletePluginStorage(pluginId, key)
         return { success: true }
       } catch (error: unknown) {
         return { success: false, error: (error as Error).message }
@@ -307,14 +279,8 @@ export class PluginAPI {
 
     ipcMain.handle('plugin-api:storage:allKeys', async (_, pluginId: string) => {
       try {
-        const filePath = join(storageDir, `${pluginId}.json`)
-        if (!existsSync(filePath)) {
-          return { success: true, data: [] }
-        }
-
-        const content = await readFile(filePath, 'utf-8')
-        const data = JSON.parse(content)
-        return { success: true, data: Object.keys(data) }
+        const keys = lmdbManager.getPluginStorageKeys(pluginId)
+        return { success: true, data: keys }
       } catch (error: unknown) {
         return { success: false, error: (error as Error).message }
       }
@@ -322,10 +288,7 @@ export class PluginAPI {
 
     ipcMain.handle('plugin-api:storage:clear', async (_, pluginId: string) => {
       try {
-        const filePath = join(storageDir, `${pluginId}.json`)
-        if (existsSync(filePath)) {
-          await writeFile(filePath, '{}')
-        }
+        lmdbManager.clearPluginStorage(pluginId)
         return { success: true }
       } catch (error: unknown) {
         return { success: false, error: (error as Error).message }

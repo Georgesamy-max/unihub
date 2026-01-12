@@ -10,7 +10,12 @@ files:
   - out/**/*
   - node_modules/@electron-toolkit/**/*
   - node_modules/adm-zip/**/*
-  - node_modules/better-sqlite3/**/*
+  - node_modules/lmdb/**/*
+  - node_modules/msgpackr/**/*
+  - node_modules/msgpackr-extract/**/*
+  - node_modules/node-gyp-build/**/*
+  - node_modules/ordered-binary/**/*
+  - node_modules/weak-lru-cache/**/*
   - node_modules/file-icon/**/*
   - node_modules/get-installed-apps/**/*
   - node_modules/pino/**/*
