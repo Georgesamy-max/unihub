@@ -337,7 +337,7 @@
       "keywords": ["h5", "html", "formatter", "beautify", "minify", "格式化", "压缩"],
       "permissions": ["clipboard"],
       "install": {
-        "zip": "https://unihub-1307847329.cos.ap-shanghai.myqcloud.com/official-plugins/h5-formatter-plugin/plugin.zip"
+        "zip": "https://unihub-1307847329.cos.ap-shanghai.myqcloud.com/official-plugins/h5-formatter/plugin.zip"
       },
       "homepage": "https://github.com/t8y2",
       "repository": "https://github.com/t8y2/unihub",
