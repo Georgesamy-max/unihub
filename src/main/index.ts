@@ -456,6 +456,18 @@ function setupIpcHandlers(): void {
     }
   })
 
+  // 关闭窗口（从渲染进程触发，用于 cmd+w 关闭最后一个标签）
+  ipcMain.on('close-window', () => {
+    if (process.platform === 'darwin') {
+      // macOS: 隐藏窗口
+      mainWindow?.hide()
+      logger.info('窗口已隐藏（通过 close-window）')
+    } else {
+      // Windows/Linux: 关闭窗口
+      mainWindow?.close()
+    }
+  })
+
   // 聚焦主窗口（用于切换到内置组件时）
   ipcMain.on('focus-main-window', () => {
     if (mainWindow && !mainWindow.isDestroyed()) {

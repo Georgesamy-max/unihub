@@ -50,29 +50,6 @@ const hasPluginTabs = (): boolean => {
   return tabs.value.some((t) => t.type === 'plugin')
 }
 
-// 主页标签动画效果（假装关闭再打开）
-const animateHomeTab = (): void => {
-  const homeTab = tabs.value.find((t) => t.pluginId === 'home')
-  if (!homeTab) return
-
-  // 临时移除主页标签触发离开动画
-  const homeTabIndex = tabs.value.findIndex((t) => t.id === homeTab.id)
-  tabs.value.splice(homeTabIndex, 1)
-  activeTabId.value = ''
-
-  // 短暂延迟后重新添加，触发进入动画
-  setTimeout(() => {
-    const newHomeTab = {
-      id: Date.now().toString(),
-      pluginId: 'home',
-      title: '主页',
-      type: 'plugin' as const
-    }
-    tabs.value.push(newHomeTab)
-    activeTabId.value = newHomeTab.id
-  }, 150)
-}
-
 // 统一的关闭标签处理函数
 const handleCloseTabRequest = (): void => {
   // 检查锁
@@ -80,17 +57,19 @@ const handleCloseTabRequest = (): void => {
     return
   }
 
+  // 如果没有标签（显示主页），关闭窗口
+  if (tabs.value.length === 0) {
+    window.electron.ipcRenderer.send('close-window')
+    return
+  }
+
   // 如果只剩一个标签
   if (tabs.value.length === 1) {
     const currentTab = tabs.value[0]
 
-    // 如果是主页，播放动画效果
+    // 如果是主页，关闭窗口
     if (currentTab.pluginId === 'home') {
-      isClosingTab = true
-      animateHomeTab()
-      setTimeout(() => {
-        isClosingTab = false
-      }, 200)
+      window.electron.ipcRenderer.send('close-window')
       return
     }
 
