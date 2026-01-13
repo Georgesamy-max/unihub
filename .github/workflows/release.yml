@@ -28,6 +28,22 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Setup Python (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup MSBuild (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Configure build environment (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo "PYTHON=${{ env.pythonLocation }}\python.exe" >> $GITHUB_ENV
+          echo "npm_config_msvs_version=2022" >> $GITHUB_ENV
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
