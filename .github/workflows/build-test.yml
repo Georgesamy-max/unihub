@@ -51,11 +51,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Rebuild native modules (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          pnpm exec electron-rebuild -f -w lmdb
-
       - name: Fix app-builder permissions (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
