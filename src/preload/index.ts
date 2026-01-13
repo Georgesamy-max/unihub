@@ -8,6 +8,10 @@ const api = {
       ipcRenderer.invoke('plugin:install-from-buffer', buffer, filename),
     uninstall: (pluginId: string) => ipcRenderer.invoke('plugin:uninstall', pluginId),
     list: () => ipcRenderer.invoke('plugin:list'),
+    checkUpdates: (marketplaceUrl: string) =>
+      ipcRenderer.invoke('plugin:checkUpdates', marketplaceUrl),
+    update: (pluginId: string, downloadUrl: string) =>
+      ipcRenderer.invoke('plugin:update', pluginId, downloadUrl),
     load: (pluginId: string) => ipcRenderer.invoke('plugin:load', pluginId),
     open: (pluginId: string) => ipcRenderer.invoke('plugin:open', pluginId),
     close: (pluginId: string) => ipcRenderer.invoke('plugin:close', pluginId),

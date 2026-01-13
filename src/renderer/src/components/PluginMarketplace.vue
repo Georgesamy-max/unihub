@@ -81,6 +81,9 @@ const uninstalling = ref(false)
 const showUninstallDialog = ref(false)
 const pluginToUninstall = ref<{ id: string; name: string } | null>(null)
 
+// 插件更新信息
+const pluginUpdates = ref<Map<string, { currentVersion: string; latestVersion: string }>>(new Map())
+
 // 事件处理器引用
 let pluginChangeHandler: (() => void) | null = null
 
@@ -89,6 +92,16 @@ const loadInstalledPlugins = async (): Promise<void> => {
   try {
     const installed = await window.api.plugin.list()
     installedPluginIds.value = new Set(installed.map((p) => p.id as string))
+
+    // 检查更新 - 转换为正确的类型
+    const installedForCheck = installed.map((p) => ({
+      id: p.id as string,
+      version: p.version as string,
+      metadata: {
+        name: (p.metadata?.name as string) || 'Unknown'
+      }
+    }))
+    checkPluginUpdates(installedForCheck)
   } catch (err) {
     console.error('加载已安装插件失败:', err)
   }
@@ -97,6 +110,58 @@ const loadInstalledPlugins = async (): Promise<void> => {
 // 检查插件是否已安装
 const isPluginInstalled = (pluginId: string): boolean => {
   return installedPluginIds.value.has(pluginId)
+}
+
+// 检查插件更新
+const checkPluginUpdates = (
+  installed: Array<{ id: string; version: string; metadata: { name: string } }>
+): void => {
+  pluginUpdates.value.clear()
+
+  for (const installedPlugin of installed) {
+    const marketPlugin = plugins.value.find((p) => p.id === installedPlugin.id)
+    if (!marketPlugin) continue
+
+    const currentVersion = installedPlugin.version
+    const latestVersion = marketPlugin.version
+
+    // 简单的版本比较
+    if (compareVersions(latestVersion, currentVersion) > 0) {
+      pluginUpdates.value.set(installedPlugin.id, {
+        currentVersion,
+        latestVersion
+      })
+    }
+  }
+}
+
+// 比较版本号
+const compareVersions = (v1: string, v2: string): number => {
+  const parts1 = v1.split('.').map(Number)
+  const parts2 = v2.split('.').map(Number)
+  const maxLength = Math.max(parts1.length, parts2.length)
+
+  for (let i = 0; i < maxLength; i++) {
+    const part1 = parts1[i] || 0
+    const part2 = parts2[i] || 0
+
+    if (part1 > part2) return 1
+    if (part1 < part2) return -1
+  }
+
+  return 0
+}
+
+// 检查插件是否有更新
+const hasUpdate = (pluginId: string): boolean => {
+  return pluginUpdates.value.has(pluginId)
+}
+
+// 获取更新信息
+const getUpdateInfo = (
+  pluginId: string
+): { currentVersion: string; latestVersion: string } | undefined => {
+  return pluginUpdates.value.get(pluginId)
 }
 
 // 加载插件列表
@@ -482,13 +547,22 @@ onUnmounted(() => {
               >
                 安装
               </button>
-              <button
-                v-else
-                class="px-4 py-1 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-full cursor-default"
-                disabled
-              >
-                已安装
-              </button>
+              <div v-else class="flex items-center gap-2">
+                <button
+                  v-if="hasUpdate(plugin.id)"
+                  class="px-4 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+                  @click.stop="openPluginDetail(plugin)"
+                >
+                  更新
+                </button>
+                <button
+                  v-else
+                  class="px-4 py-1 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-full cursor-default"
+                  disabled
+                >
+                  已安装
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -694,19 +768,31 @@ onUnmounted(() => {
           >
             {{ installing ? '安装中...' : '安装插件' }}
           </Button>
-          <Button
-            v-else
-            variant="destructive"
-            @click="
-              () => {
-                if (selectedPlugin) {
-                  confirmUninstall(selectedPlugin.id, selectedPlugin.name)
+          <template v-else>
+            <Button
+              v-if="hasUpdate(selectedPlugin.id)"
+              :disabled="installing"
+              @click="installPlugin(selectedPlugin)"
+            >
+              {{
+                installing
+                  ? '更新中...'
+                  : `更新到 v${getUpdateInfo(selectedPlugin.id)?.latestVersion}`
+              }}
+            </Button>
+            <Button
+              variant="destructive"
+              @click="
+                () => {
+                  if (selectedPlugin) {
+                    confirmUninstall(selectedPlugin.id, selectedPlugin.name)
+                  }
                 }
-              }
-            "
-          >
-            卸载插件
-          </Button>
+              "
+            >
+              卸载插件
+            </Button>
+          </template>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -264,6 +264,16 @@ function setupIpcHandlers(): void {
     return await pluginManager.listPlugins()
   })
 
+  // 检查插件更新
+  ipcMain.handle('plugin:checkUpdates', async (_, marketplaceUrl: string) => {
+    return await pluginManager.checkPluginUpdates(marketplaceUrl)
+  })
+
+  // 更新插件
+  ipcMain.handle('plugin:update', async (_, pluginId: string, downloadUrl: string) => {
+    return await pluginManager.updatePlugin(pluginId, downloadUrl)
+  })
+
   ipcMain.handle('plugin:load', async (_, pluginId: string) => {
     const result = await pluginManager.loadPlugin(pluginId)
     if (result.success) {

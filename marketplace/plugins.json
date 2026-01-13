@@ -214,7 +214,7 @@
     {
       "id": "com.baiy.ctool",
       "name": "Ctool 开发工具集",
-      "version": "2.3.0",
+      "version": "1.0.0",
       "description": "程序开发常用工具集 - 包含 40+ 个开发工具：哈希、加密解密、Base64、代码格式化、JSON 工具、正则表达式、时间转换、二维码等",
       "author": {
         "name": "baiy",

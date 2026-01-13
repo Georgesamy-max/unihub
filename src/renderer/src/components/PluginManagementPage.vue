@@ -63,8 +63,12 @@ interface InstalledPlugin {
   }
 }
 
-// 已安装的第三方插件（用于显示详细信息）
 const installedPlugins = ref<InstalledPlugin[]>([])
+
+// 插件更新信息
+const pluginUpdates = ref<Map<string, { latestVersion: string; downloadUrl: string }>>(new Map())
+const checkingUpdates = ref(false)
+const updatingPlugins = ref<Set<string>>(new Set())
 
 // 按分类分组（只包含内置插件）
 const pluginsByCategory = computed(() => {
@@ -100,8 +104,107 @@ const loadInstalledPlugins = async (): Promise<void> => {
   }
 }
 
+// 检查插件更新
+const checkPluginUpdates = async (): Promise<void> => {
+  try {
+    checkingUpdates.value = true
+    // 使用项目配置的市场 URL，失败时降级到 CDN
+    const MARKETPLACE_URL = 'https://stats-api-nu.vercel.app/api/plugins'
+    const MARKETPLACE_CDN_URL =
+      'https://cdn.jsdelivr.net/gh/t8y2/unihub@main/marketplace/plugins.json'
+
+    let marketplaceUrl = MARKETPLACE_URL
+
+    // 先尝试 API，失败则使用 CDN
+    try {
+      const testResponse = await fetch(MARKETPLACE_URL, { method: 'HEAD' })
+      if (!testResponse.ok) {
+        console.warn('API 不可用，使用 CDN 备用地址')
+        marketplaceUrl = MARKETPLACE_CDN_URL
+      }
+    } catch {
+      console.warn('API 不可用，使用 CDN 备用地址')
+      marketplaceUrl = MARKETPLACE_CDN_URL
+    }
+
+    const result = await window.api.plugin.checkUpdates(marketplaceUrl)
+
+    if (result.success && result.updates) {
+      pluginUpdates.value.clear()
+      result.updates.forEach((update) => {
+        pluginUpdates.value.set(update.id, {
+          latestVersion: update.latestVersion,
+          downloadUrl: update.downloadUrl || ''
+        })
+      })
+
+      if (result.updates.length > 0) {
+        toast.success(`发现 ${result.updates.length} 个插件有更新`)
+      } else {
+        toast.info('所有插件都是最新版本')
+      }
+    } else {
+      const errorMsg = result.message || '检查更新失败'
+      console.error('检查更新失败:', errorMsg)
+      toast.error(`检查更新失败: ${errorMsg}`)
+    }
+  } catch (err) {
+    console.error('检查更新失败:', err)
+    const errorMessage = err instanceof Error ? err.message : '网络连接失败'
+    toast.error(`检查更新失败: ${errorMessage}`)
+  } finally {
+    checkingUpdates.value = false
+  }
+}
+
+// 更新单个插件
+const updatePlugin = async (pluginId: string, pluginName: string): Promise<void> => {
+  const updateInfo = pluginUpdates.value.get(pluginId)
+  if (!updateInfo || !updateInfo.downloadUrl) {
+    toast.error('无法获取更新信息')
+    return
+  }
+
+  try {
+    updatingPlugins.value.add(pluginId)
+    const result = await window.api.plugin.update(pluginId, updateInfo.downloadUrl)
+
+    if (result.success) {
+      toast.success(`${pluginName} 更新成功！`)
+      pluginUpdates.value.delete(pluginId)
+      await pluginInstaller.loadInstalledPlugins()
+      await loadInstalledPlugins()
+      refreshKey.value++
+      window.dispatchEvent(new CustomEvent('plugin-installed'))
+    } else {
+      toast.error(result.message || '更新失败')
+    }
+  } catch (err) {
+    console.error('更新插件失败:', err)
+    toast.error(err instanceof Error ? err.message : '更新失败')
+  } finally {
+    updatingPlugins.value.delete(pluginId)
+  }
+}
+
+// 检查插件是否有更新
+const hasUpdate = (pluginId: string): boolean => {
+  return pluginUpdates.value.has(pluginId)
+}
+
+// 获取插件的最新版本号
+const getLatestVersion = (pluginId: string): string => {
+  return pluginUpdates.value.get(pluginId)?.latestVersion || ''
+}
+
 onMounted(() => {
   loadInstalledPlugins()
+
+  // 可选：自动检查更新（可以通过配置控制）
+  // 延迟 1 秒后检查，避免影响页面加载速度
+  setTimeout(() => {
+    checkPluginUpdates()
+  }, 1000)
 
   // 监听插件安装/卸载事件
   pluginEventHandler = () => {
@@ -289,6 +392,9 @@ const uninstallPlugin = async (): Promise<void> => {
 
       <!-- 操作按钮 -->
       <div class="flex items-center gap-2">
+        <Button variant="outline" size="sm" :disabled="checkingUpdates" @click="checkPluginUpdates">
+          {{ checkingUpdates ? '检查中...' : '检查更新' }}
+        </Button>
         <Button variant="outline" size="sm" @click="showDevMode = true"> 开发模式 </Button>
       </div>
     </div>
@@ -324,6 +430,13 @@ const uninstallPlugin = async (): Promise<void> => {
                   <Badge variant="secondary" class="text-xs px-1.5 py-0.5">
                     v{{ plugin.metadata.version }}
                   </Badge>
+                  <Badge
+                    v-if="hasUpdate(plugin.metadata.id)"
+                    variant="default"
+                    class="text-xs px-1.5 py-0.5 bg-blue-500 hover:bg-blue-600"
+                  >
+                    v{{ getLatestVersion(plugin.metadata.id) }} 可用
+                  </Badge>
                 </div>
                 <p class="text-xs text-gray-600 dark:text-gray-400 line-clamp-1">
                   {{ plugin.metadata.description }}
@@ -331,14 +444,26 @@ const uninstallPlugin = async (): Promise<void> => {
               </div>
 
               <!-- 操作按钮 -->
-              <Button
-                size="sm"
-                variant="outline"
-                class="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 text-xs px-2 py-1 h-auto flex-shrink-0"
-                @click="confirmUninstall(plugin.metadata.id, plugin.metadata.name)"
-              >
-                卸载
-              </Button>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <Button
+                  v-if="hasUpdate(plugin.metadata.id)"
+                  size="sm"
+                  variant="default"
+                  class="text-xs px-2 py-1 h-auto bg-blue-500 hover:bg-blue-600"
+                  :disabled="updatingPlugins.has(plugin.metadata.id)"
+                  @click="updatePlugin(plugin.metadata.id, plugin.metadata.name)"
+                >
+                  {{ updatingPlugins.has(plugin.metadata.id) ? '更新中...' : '更新' }}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  class="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 text-xs px-2 py-1 h-auto"
+                  @click="confirmUninstall(plugin.metadata.id, plugin.metadata.name)"
+                >
+                  卸载
+                </Button>
+              </div>
             </div>
           </div>
         </div>

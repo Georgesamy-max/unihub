@@ -462,6 +462,166 @@ export class PluginManager {
     this.getInstalledPlugins()
   }
 
+  /**
+   * 检查插件更新
+   * @param marketplaceUrl 插件市场 URL
+   * @returns 有更新的插件列表
+   */
+  async checkPluginUpdates(marketplaceUrl: string): Promise<{
+    success: boolean
+    updates: Array<{
+      id: string
+      name: string
+      currentVersion: string
+      latestVersion: string
+      changelog?: string
+      downloadUrl?: string
+    }>
+    message?: string
+  }> {
+    try {
+      logger.info({ marketplaceUrl }, '开始检查插件更新')
+
+      // 获取已安装的插件
+      const installed = this.getInstalledPlugins()
+      if (installed.length === 0) {
+        logger.info('没有已安装的插件，跳过更新检查')
+        return { success: true, updates: [] }
+      }
+
+      // 获取市场插件列表
+      logger.debug('正在获取插件市场数据...')
+      const response = await net.fetch(marketplaceUrl)
+
+      if (!response.ok) {
+        const errorMsg = `HTTP ${response.status}: ${response.statusText}`
+        logger.error(
+          { status: response.status, statusText: response.statusText },
+          '获取插件市场数据失败'
+        )
+        throw new Error(errorMsg)
+      }
+
+      const marketData = (await response.json()) as {
+        plugins: Array<{
+          id: string
+          name: string
+          version: string
+          install: { zip?: string }
+        }>
+      }
+
+      if (!marketData.plugins || !Array.isArray(marketData.plugins)) {
+        throw new Error('插件市场数据格式错误')
+      }
+
+      logger.debug({ pluginCount: marketData.plugins.length }, '成功获取插件市场数据')
+
+      // 比较版本，找出有更新的插件
+      const updates: Array<{
+        id: string
+        name: string
+        currentVersion: string
+        latestVersion: string
+        changelog?: string
+        downloadUrl?: string
+      }> = []
+
+      for (const installedPlugin of installed) {
+        const marketPlugin = marketData.plugins.find((p) => p.id === installedPlugin.id)
+        if (!marketPlugin) {
+          logger.debug({ pluginId: installedPlugin.id }, '插件不在市场中，跳过')
+          continue
+        }
+
+        const currentVersion = installedPlugin.version
+        const latestVersion = marketPlugin.version
+
+        // 比较版本号
+        if (this.compareVersions(latestVersion, currentVersion) > 0) {
+          logger.info(
+            {
+              pluginId: installedPlugin.id,
+              currentVersion,
+              latestVersion
+            },
+            '发现插件更新'
+          )
+          updates.push({
+            id: installedPlugin.id,
+            name: installedPlugin.metadata.name,
+            currentVersion,
+            latestVersion,
+            downloadUrl: marketPlugin.install.zip
+          })
+        }
+      }
+
+      logger.info({ count: updates.length }, '检查更新完成')
+      return { success: true, updates }
+    } catch (error) {
+      const errorMessage = (error as Error).message
+      logger.error({ error: errorMessage, marketplaceUrl }, '检查插件更新失败')
+      return {
+        success: false,
+        updates: [],
+        message: errorMessage
+      }
+    }
+  }
+
+  /**
+   * 更新插件
+   * @param pluginId 插件 ID
+   * @param downloadUrl 下载地址
+   */
+  async updatePlugin(
+    pluginId: string,
+    downloadUrl: string
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      logger.info({ pluginId, downloadUrl }, '开始更新插件')
+
+      // 先卸载旧版本
+      const uninstallResult = await this.uninstallPlugin(pluginId)
+      if (!uninstallResult.success) {
+        throw new Error(`卸载旧版本失败: ${uninstallResult.message}`)
+      }
+
+      // 安装新版本
+      const installResult = await this.installPlugin(downloadUrl)
+      if (!installResult.success) {
+        throw new Error(`安装新版本失败: ${installResult.message}`)
+      }
+
+      logger.info({ pluginId }, '插件更新成功')
+      return { success: true, message: '插件更新成功' }
+    } catch (error) {
+      logger.error({ error, pluginId }, '更新插件失败')
+      return { success: false, message: (error as Error).message }
+    }
+  }
+
+  /**
+   * 比较版本号
+   * @returns 1: v1 > v2, 0: v1 = v2, -1: v1 < v2
+   */
+  private compareVersions(version1: string, version2: string): number {
+    const v1Parts = version1.split('.').map(Number)
+    const v2Parts = version2.split('.').map(Number)
+    const maxLength = Math.max(v1Parts.length, v2Parts.length)
+
+    for (let i = 0; i < maxLength; i++) {
+      const v1Part = v1Parts[i] || 0
+      const v2Part = v2Parts[i] || 0
+
+      if (v1Part > v2Part) return 1
+      if (v1Part < v2Part) return -1
+    }
+
+    return 0
+  }
+
   private savePluginInfo(plugin: InstalledPlugin): void {
     // 先清除缓存，确保读取最新数据
     this.cachedPlugins = null
