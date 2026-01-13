@@ -87,7 +87,19 @@
       "esbuild",
       "lmdb",
       "msgpackr-extract"
-    ]
+    ],
+    "patchedDependencies": {},
+    "supportedArchitectures": {
+      "os": [
+        "current"
+      ],
+      "cpu": [
+        "current"
+      ]
+    }
+  },
+  "electronRebuild": {
+    "force": true
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,vue}": [
