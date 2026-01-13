@@ -51,16 +51,13 @@ jobs:
         if: matrix.os == 'windows-latest'
         uses: microsoft/setup-msbuild@v2
 
-      - name: Setup build environment (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          echo "npm_config_msvs_version=2022" >> $GITHUB_ENV
-          echo "npm_config_node_gyp=${{ github.workspace }}\node_modules\node-gyp\bin\node-gyp.js" >> $GITHUB_ENV
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        env:
-          npm_config_build_from_source: false
+
+      - name: Rebuild native modules (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          pnpm exec electron-rebuild -f -w lmdb
 
       - name: Fix app-builder permissions (Linux)
         if: matrix.os == 'ubuntu-latest'
