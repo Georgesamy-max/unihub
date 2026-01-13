@@ -1,18 +1,15 @@
-name: Release
+name: Build Test
 
 on:
   push:
-    tags:
-      - 'v*.*.*'
     branches:
       - main
       - master
-
-permissions:
-  contents: write
+      - develop
+  pull_request:
 
 jobs:
-  release:
+  build-test:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -67,38 +64,19 @@ jobs:
         run: |
           find node_modules -name app-builder -type f -exec chmod +x {} \;
 
-      - name: Build (macOS)
-        if: matrix.os == 'macos-latest' && !startsWith(github.ref, 'refs/tags/')
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Build
         run: pnpm build:prod
 
-      - name: Build and release (macOS)
-        if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/')
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Package (no publish)
         run: |
-          pnpm build:prod
-          pnpm exec electron-builder --mac --publish always
-
-      - name: Build (Windows)
-        if: matrix.os == 'windows-latest' && !startsWith(github.ref, 'refs/tags/')
-        run: pnpm build:prod
-
-      - name: Build and release (Windows)
-        if: matrix.os == 'windows-latest' && startsWith(github.ref, 'refs/tags/')
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          pnpm build:prod
-          pnpm exec electron-builder --win --publish always
-
-      - name: Build (Linux)
-        if: matrix.os == 'ubuntu-latest' && !startsWith(github.ref, 'refs/tags/')
-        run: pnpm build:prod
-
-      - name: Build and release (Linux)
-        if: matrix.os == 'ubuntu-latest' && startsWith(github.ref, 'refs/tags/')
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          pnpm build:prod
-          pnpm exec electron-builder --linux --publish always
+          if [ "${{ matrix.os }}" == "macos-latest" ]; then
+            pnpm exec electron-builder --mac --dir
+          elif [ "${{ matrix.os }}" == "windows-latest" ]; then
+            pnpm exec electron-builder --win --dir
+          else
+            pnpm exec electron-builder --linux --dir
+          fi
+        shell: bash
