@@ -37,8 +37,9 @@ jobs:
 
       - name: Configure build environment (Windows)
         if: matrix.os == 'windows-latest'
+        shell: bash
         run: |
-          echo "PYTHON=${{ env.pythonLocation }}\python.exe" >> $GITHUB_ENV
+          echo "PYTHON=${{ env.pythonLocation }}/python.exe" >> $GITHUB_ENV
           echo "npm_config_msvs_version=2022" >> $GITHUB_ENV
 
       - name: Setup pnpm
@@ -60,11 +61,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Setup MSBuild (Windows)
+      - name: Install dependencies (Windows - skip scripts)
         if: matrix.os == 'windows-latest'
-        uses: microsoft/setup-msbuild@v2
+        run: pnpm install --no-frozen-lockfile --ignore-scripts
 
-      - name: Install dependencies
+      - name: Install dependencies (non-Windows)
+        if: matrix.os != 'windows-latest'
         run: pnpm install --no-frozen-lockfile
 
       - name: Fix app-builder permissions (Linux)
