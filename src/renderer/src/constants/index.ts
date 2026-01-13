@@ -124,6 +124,7 @@ export const MARKETPLACE_URL = import.meta.env.VITE_PLUGIN_API_URL
 export const MARKETPLACE_CDN_URL =
   'https://cdn.jsdelivr.net/gh/t8y2/unihub@main/marketplace/plugins.json'
 
+// 插件市场分类
 export const MARKETPLACE_CATEGORIES = [
   { value: 'all', label: '全部' },
   { value: 'tool', label: '工具' },

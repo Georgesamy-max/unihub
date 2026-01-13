@@ -9,6 +9,9 @@ import { createLogger } from '../shared/logger'
 
 const logger = createLogger('plugin-manager')
 
+// 插件市场 CDN 备用地址
+const MARKETPLACE_CDN_URL = 'https://cdn.jsdelivr.net/gh/t8y2/unihub@main/marketplace/plugins.json'
+
 interface PackageJson {
   name: string
   version: string
@@ -489,9 +492,18 @@ export class PluginManager {
         return { success: true, updates: [] }
       }
 
-      // 获取市场插件列表
+      // 获取市场插件列表，失败时自动降级到 CDN
       logger.debug('正在获取插件市场数据...')
-      const response = await net.fetch(marketplaceUrl)
+      let response = await net.fetch(marketplaceUrl)
+
+      // 如果主 API 失败，尝试 CDN 备用地址
+      if (!response.ok) {
+        logger.warn(
+          { status: response.status, fallbackUrl: MARKETPLACE_CDN_URL },
+          'API 请求失败，尝试 CDN 备用地址'
+        )
+        response = await net.fetch(MARKETPLACE_CDN_URL)
+      }
 
       if (!response.ok) {
         const errorMsg = `HTTP ${response.status}: ${response.statusText}`

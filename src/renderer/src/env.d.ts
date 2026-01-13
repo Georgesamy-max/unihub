@@ -78,6 +78,19 @@ declare global {
         installFromBuffer: (buffer: number[], filename: string) => Promise<ApiResponse<Plugin>>
         uninstall: (pluginId: string) => Promise<ApiResponse>
         list: () => Promise<Plugin[]>
+        checkUpdates: (marketplaceUrl: string) => Promise<{
+          success: boolean
+          updates: Array<{
+            id: string
+            name: string
+            currentVersion: string
+            latestVersion: string
+            changelog?: string
+            downloadUrl?: string
+          }>
+          message?: string
+        }>
+        update: (pluginId: string, downloadUrl: string) => Promise<ApiResponse>
         load: (
           pluginId: string
         ) => Promise<ApiResponse<{ pluginUrl?: string; devUrl?: string; htmlPath?: string }>>

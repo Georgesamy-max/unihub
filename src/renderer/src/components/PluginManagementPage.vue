@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dialog'
 import PluginDevMode from './PluginDevMode.vue'
 import PluginStore from './PluginStore.vue'
-import { CATEGORY_NAMES } from '@/constants'
+import { CATEGORY_NAMES, MARKETPLACE_URL } from '@/constants'
 
 type ActiveTab = 'store' | 'installed' | 'install'
 
@@ -108,26 +108,8 @@ const loadInstalledPlugins = async (): Promise<void> => {
 const checkPluginUpdates = async (): Promise<void> => {
   try {
     checkingUpdates.value = true
-    // 使用项目配置的市场 URL，失败时降级到 CDN
-    const MARKETPLACE_URL = 'https://stats-api-nu.vercel.app/api/plugins'
-    const MARKETPLACE_CDN_URL =
-      'https://cdn.jsdelivr.net/gh/t8y2/unihub@main/marketplace/plugins.json'
-
-    let marketplaceUrl = MARKETPLACE_URL
-
-    // 先尝试 API，失败则使用 CDN
-    try {
-      const testResponse = await fetch(MARKETPLACE_URL, { method: 'HEAD' })
-      if (!testResponse.ok) {
-        console.warn('API 不可用，使用 CDN 备用地址')
-        marketplaceUrl = MARKETPLACE_CDN_URL
-      }
-    } catch {
-      console.warn('API 不可用，使用 CDN 备用地址')
-      marketplaceUrl = MARKETPLACE_CDN_URL
-    }
-
-    const result = await window.api.plugin.checkUpdates(marketplaceUrl)
+    // 使用项目配置的市场 URL，失败时在后端自动降级到 CDN
+    const result = await window.api.plugin.checkUpdates(MARKETPLACE_URL)
 
     if (result.success && result.updates) {
       pluginUpdates.value.clear()
@@ -140,9 +122,8 @@ const checkPluginUpdates = async (): Promise<void> => {
 
       if (result.updates.length > 0) {
         toast.success(`发现 ${result.updates.length} 个插件有更新`)
-      } else {
-        toast.info('所有插件都是最新版本')
       }
+      // 移除"所有插件都是最新版本"的提示，静默处理
     } else {
       const errorMsg = result.message || '检查更新失败'
       console.error('检查更新失败:', errorMsg)
