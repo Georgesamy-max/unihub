@@ -111,15 +111,22 @@ export class PluginManager {
   private async downloadWithRetry(url: string, maxRetries: number = 3): Promise<Buffer> {
     let lastError: Error | null = null
 
+    // 添加时间戳参数防止缓存
+    const urlWithTimestamp = url.includes('?')
+      ? `${url}&_t=${Date.now()}`
+      : `${url}?_t=${Date.now()}`
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        logger.debug({ attempt, maxRetries, url }, '下载尝试')
+        logger.debug({ attempt, maxRetries, url: urlWithTimestamp }, '下载尝试')
 
         // 使用 Electron 的 net.fetch，它没有内置的超时限制
-        const response = await net.fetch(url, {
+        const response = await net.fetch(urlWithTimestamp, {
           headers: {
             'User-Agent': 'UniHub/1.0',
-            Accept: 'application/zip,application/octet-stream,*/*'
+            Accept: 'application/zip,application/octet-stream,*/*',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            Pragma: 'no-cache'
           }
         })
 
