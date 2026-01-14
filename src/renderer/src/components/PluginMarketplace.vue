@@ -91,6 +91,7 @@ let pluginChangeHandler: (() => void) | null = null
 const loadInstalledPlugins = async (): Promise<void> => {
   try {
     const installed = await window.api.plugin.list()
+    console.log('📋 [Marketplace] 加载已安装插件列表:', installed)
     installedPluginIds.value = new Set(installed.map((p) => p.id as string))
 
     // 检查更新 - 转换为正确的类型
@@ -101,6 +102,7 @@ const loadInstalledPlugins = async (): Promise<void> => {
         name: (p.metadata?.name as string) || 'Unknown'
       }
     }))
+    console.log('🔄 [Marketplace] 准备检查更新，插件列表:', installedForCheck)
     checkPluginUpdates(installedForCheck)
   } catch (err) {
     console.error('加载已安装插件失败:', err)
@@ -118,21 +120,40 @@ const checkPluginUpdates = (
 ): void => {
   pluginUpdates.value.clear()
 
+  console.log('🔍 [Marketplace] 开始检查插件更新')
+  console.log('📦 [Marketplace] 已安装插件:', installed)
+  console.log('🏪 [Marketplace] 市场插件:', plugins.value)
+
   for (const installedPlugin of installed) {
     const marketPlugin = plugins.value.find((p) => p.id === installedPlugin.id)
-    if (!marketPlugin) continue
+    if (!marketPlugin) {
+      console.log(`⚠️ [Marketplace] 插件 ${installedPlugin.id} 在市场中未找到`)
+      continue
+    }
 
     const currentVersion = installedPlugin.version
     const latestVersion = marketPlugin.version
 
+    console.log(`🔄 [Marketplace] 检查插件 ${installedPlugin.metadata.name}:`, {
+      id: installedPlugin.id,
+      currentVersion,
+      latestVersion,
+      compareResult: compareVersions(latestVersion, currentVersion)
+    })
+
     // 简单的版本比较
     if (compareVersions(latestVersion, currentVersion) > 0) {
+      console.log(
+        `✅ [Marketplace] 发现更新: ${installedPlugin.metadata.name} ${currentVersion} -> ${latestVersion}`
+      )
       pluginUpdates.value.set(installedPlugin.id, {
         currentVersion,
         latestVersion
       })
     }
   }
+
+  console.log('📊 [Marketplace] 更新检查完成，发现更新:', pluginUpdates.value)
 }
 
 // 比较版本号
@@ -186,8 +207,13 @@ const loadPlugins = async (): Promise<void> => {
     const data = await response.json()
     plugins.value = data.plugins || []
 
+    console.log('🏪 [Marketplace] 插件列表加载完成:', plugins.value.length, '个插件')
+
     // 加载统计数据
     loadPluginStats()
+
+    // 重新检查更新（因为现在 plugins.value 已经有数据了）
+    await loadInstalledPlugins()
   } catch (err) {
     error.value = (err as Error).message
     console.error('加载插件失败:', err)
@@ -275,7 +301,23 @@ const confirmInstall = async (): Promise<void> => {
     installing.value = true
     showPermissionDialog.value = false
 
-    console.log('📦 [Marketplace] 开始安装插件:', selectedPlugin.value.name)
+    const pluginId = selectedPlugin.value.id
+    const pluginName = selectedPlugin.value.name
+    const isUpdate = hasUpdate(pluginId)
+
+    console.log('📦 [Marketplace] 开始安装插件:', pluginName, isUpdate ? '(更新)' : '(新安装)')
+
+    // 如果是更新，先卸载旧版本
+    if (isUpdate) {
+      console.log('🔄 [Marketplace] 检测到更新，先卸载旧版本')
+      try {
+        await pluginInstaller.uninstall(pluginId)
+        console.log('✅ [Marketplace] 旧版本卸载成功')
+      } catch (uninstallErr) {
+        console.error('❌ [Marketplace] 卸载旧版本失败:', uninstallErr)
+        throw new Error(`卸载旧版本失败: ${(uninstallErr as Error).message}`)
+      }
+    }
 
     // 使用 install.zip
     const installUrl = selectedPlugin.value.install?.zip
@@ -297,7 +339,7 @@ const confirmInstall = async (): Promise<void> => {
         })
       }
 
-      toast.success(`${selectedPlugin.value.name} 安装成功！`)
+      toast.success(`${pluginName} ${isUpdate ? '更新' : '安装'}成功！`)
       closePluginDetail()
 
       // 重新加载插件
@@ -310,10 +352,12 @@ const confirmInstall = async (): Promise<void> => {
       // 触发全局刷新事件（通知其他组件）
       window.dispatchEvent(new CustomEvent('plugin-installed'))
     } else {
-      toast.error(`安装失败: ${result.message}`)
+      toast.error(`${isUpdate ? '更新' : '安装'}失败: ${result.message}`)
     }
   } catch (err) {
-    toast.error(`安装失败: ${(err as Error).message}`)
+    toast.error(
+      `${hasUpdate(selectedPlugin.value?.id || '') ? '更新' : '安装'}失败: ${(err as Error).message}`
+    )
   } finally {
     installing.value = false
   }
@@ -352,8 +396,7 @@ const uninstallPlugin = async (): Promise<void> => {
 }
 
 onMounted(() => {
-  loadPlugins()
-  loadInstalledPlugins()
+  loadPlugins() // 这会先加载市场插件，然后自动调用 loadInstalledPlugins
 
   // 监听插件变更事件
   pluginChangeHandler = () => {
@@ -551,7 +594,8 @@ onUnmounted(() => {
                 <button
                   v-if="hasUpdate(plugin.id)"
                   class="px-4 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
-                  @click.stop="openPluginDetail(plugin)"
+                  :disabled="installing"
+                  @click.stop="installPlugin(plugin)"
                 >
                   更新
                 </button>
@@ -630,13 +674,23 @@ onUnmounted(() => {
             >
               安装
             </button>
-            <button
-              v-else
-              class="px-4 py-1 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-full cursor-default whitespace-nowrap"
-              disabled
-            >
-              已安装
-            </button>
+            <div v-else class="flex items-center gap-2">
+              <button
+                v-if="hasUpdate(plugin.id)"
+                class="px-4 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors whitespace-nowrap"
+                :disabled="installing"
+                @click.stop="installPlugin(plugin)"
+              >
+                更新
+              </button>
+              <button
+                v-else
+                class="px-4 py-1 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-full cursor-default whitespace-nowrap"
+                disabled
+              >
+                已安装
+              </button>
+            </div>
           </div>
         </div>
       </div>
