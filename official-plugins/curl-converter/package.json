@@ -1,6 +1,6 @@
 {
   "name": "curl-converter-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Shell curl 命令转换为 Windows curl 格式 - 自动处理单引号转双引号、JSON 内双引号转义、换行符处理",
   "author": {
     "name": "UniHub Team",

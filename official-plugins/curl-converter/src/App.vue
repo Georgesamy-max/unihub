@@ -1,11 +1,26 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { toast } from 'vue-sonner'
 import { Toaster } from '@/components/ui/sonner'
 import { Button } from '@/components/ui/button'
 
+const STORAGE_KEY = 'curl-converter-output-format'
+
 const input = ref('')
 const outputFormat = ref<'single' | 'multiline'>('single')
+
+// 从 localStorage 加载用户偏好
+onMounted(() => {
+  const saved = localStorage.getItem(STORAGE_KEY)
+  if (saved === 'single' || saved === 'multiline') {
+    outputFormat.value = saved
+  }
+})
+
+// 监听格式变化并保存到 localStorage
+watch(outputFormat, (newFormat) => {
+  localStorage.setItem(STORAGE_KEY, newFormat)
+})
 
 /**
  * 将 Shell curl 命令转换为 Windows curl 格式
